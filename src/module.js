@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import {HistogramCtrl} from './histogram_ctrl';
-import './histogram';
+import {HeatmapEpochCtrl} from './heatmap_ctrl';
+import './heatmap';
 
 export {
-  HistogramCtrl as PanelCtrl
+  HeatmapEpochCtrl as PanelCtrl
 };

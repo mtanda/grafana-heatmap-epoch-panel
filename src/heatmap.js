@@ -12,8 +12,10 @@ import 'jquery.flot.stackpercent';
 import 'jquery.flot.fillbelow';
 import 'jquery.flot.crosshair';
 import 'app/plugins/panel/graph/jquery.flot.events';
+import './bower_components/d3/d3.min.js';
+import './bower_components/epoch/dist/js/epoch.min.js';
 
-angular.module('grafana.directives').directive('grafanaHistogram', function($rootScope, timeSrv) {
+angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($rootScope, timeSrv) {
   return {
     restrict: 'A',
     template: '<div> </div>',
@@ -213,7 +215,35 @@ angular.module('grafana.directives').directive('grafanaHistogram', function($roo
 
         for (var i = 0; i < data.length; i++) {
           var series = data[i];
-          series.data = series.getFlotPairs(series.nullPointMode || panel.nullPointMode);
+
+          var values = _.chain(series.datapoints)
+          .reject(function(dp) {
+            return dp[0] === null;
+          })
+          .sortBy(function(dp) {
+            return dp[1];
+          })
+          .map(function(dp) {
+            return {
+              time: dp[1],
+              value: dp[0]
+            }
+          })
+          .groupBy(function(dp) {
+            return dp.time;
+          })
+          .map(function(values, time) {
+            return {
+              time: Math.floor(time / 1000),
+              histogram: _.countBy(values, function(value) {
+                return value.value;
+              })
+            };
+          }).value();
+          series.data = {
+            label: series.label,
+            values: values
+          }
 
           // if hidden remove points and disable stack
           if (ctrl.hiddenSeries[series.alias]) {
@@ -222,20 +252,44 @@ angular.module('grafana.directives').directive('grafanaHistogram', function($roo
           }
         }
 
-        if (data.length && data[0].stats.timeStep) {
-          options.series.bars.barWidth = data[0].stats.timeStep / 1.5;
-        }
+        //if (data.length && data[0].stats.timeStep) {
+        //  options.series.bars.barWidth = data[0].stats.timeStep / 1.5;
+        //}
 
         addTimeAxis(options);
         addGridThresholds(options, panel);
         addAnnotations(options);
-        configureAxisOptions(data, options);
+        //configureAxisOptions(data, options);
 
-        sortedSeries = _.sortBy(data, function(series) { return series.zindex; });
+        sortedSeries = _.chain(data)
+        .map(function(series) {
+          return series.data;
+        })
+        .sortBy(function(series) {
+          return series.label;
+        })
+        .value();
 
         function callPlot(incrementRenderCounter) {
           try {
-            $.plot(elem, sortedSeries, options);
+            var heatmapOptions = {
+              type: 'time.heatmap',
+              data: sortedSeries,
+              axes: ['left', 'bottom', 'right'],
+              opacity: function(value, max) {
+                return Math.pow((value/max), 0.7);
+              }
+            };
+            if (panel.windowSize) {
+              heatmapOptions.windowSize = panel.windowSize;
+            }
+            if (panel.buckets) {
+              heatmapOptions.buckets = panel.buckets;
+            }
+            if (panel.bucketRangeLower && panel.bucketRangeUpper) {
+              heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
+            }
+            elem.epoch(heatmapOptions);
           } catch (e) {
             console.log('flotcharts error', e);
           }
