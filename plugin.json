@@ -1,7 +1,7 @@
 {
   "type": "panel",
-  "name": "Histogram",
-  "id": "histogram",
+  "name": "HeatmapEpoch",
+  "id": "grafana-heatmap-epoch-panel",
 
   "dependencies": {
     "grafanaVersion": "3.x.x",

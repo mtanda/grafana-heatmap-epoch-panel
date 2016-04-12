@@ -3,7 +3,7 @@ Either clone this repo into your grafana plugins directory (default /var/lib/gra
 Restart grafana-server and the plugin should be automatically detected and used.
 
 ```
-git clone git@github.com:mtanda/grafana-panel-plugin-histogram.git
+git clone git@github.com:mtanda/grafana-heatmap-epoch-panel.git
 sudo service grafana-server restart
 ```
 
@@ -13,8 +13,8 @@ sudo service grafana-server restart
 The edit your grafana.ini config file (Default location is at /etc/grafana/grafana.ini) and add this:
 
 ```ini
-[plugin.histogram]
-path = /home/your/clone/dir/panel-plugin-histogram
+[plugin.grafana-heatmap-epoch-panel]
+path = /home/your/clone/dir/grafana-heatmap-epoch-panel
 ```
 
 Note that if you clone it into the grafana plugins directory you do not need to add the above config option. That is only
