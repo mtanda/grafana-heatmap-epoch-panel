@@ -1,0 +1,13 @@
+{
+  "name": "heatmap-epoch-panel",
+  "authors": [
+    "Mitsuhiro Tanda <mitsuhiro.tanda@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "Apache 2.0",
+  "dependencies": {
+    "epoch": "~0.8.4"
+  }
+}
