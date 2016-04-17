@@ -3,15 +3,6 @@ import $ from 'jquery';
 import moment from 'moment';
 import _ from 'lodash';
 import kbn from 'app/core/utils/kbn';
-import GraphTooltip from 'app/plugins/panel/graph/graph_tooltip.js';
-import 'jquery.flot';
-import 'jquery.flot.selection';
-import 'jquery.flot.time';
-import 'jquery.flot.stack';
-import 'jquery.flot.stackpercent';
-import 'jquery.flot.fillbelow';
-import 'jquery.flot.crosshair';
-import 'app/plugins/panel/graph/jquery.flot.events';
 import './bower_components/d3/d3.min.js';
 import './bower_components/epoch/dist/js/epoch.min.js';
 
@@ -23,31 +14,10 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var ctrl = scope.ctrl;
       var dashboard = ctrl.dashboard;
       var panel = ctrl.panel;
-      var data, annotations;
+      var data;
       var sortedSeries;
       var legendSideLastValue = null;
       var rootScope = scope.$root;
-
-      rootScope.onAppEvent('setCrosshair', function(event, info) {
-        // do not need to to this if event is from this panel
-        if (info.scope === scope) {
-          return;
-        }
-
-        if(dashboard.sharedCrosshair) {
-          var plot = elem.data().plot;
-          if (plot) {
-            plot.setCrosshair({ x: info.pos.x, y: info.pos.y });
-          }
-        }
-      }, scope);
-
-      rootScope.onAppEvent('clearCrosshair', function() {
-        var plot = elem.data().plot;
-        if (plot) {
-          plot.clearCrosshair();
-        }
-      }, scope);
 
       // Receive render events
       ctrl.events.on('render', function(renderData) {
@@ -56,7 +26,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           ctrl.refresh();
           return;
         }
-        annotations = data.annotations || annotations;
         render_panel();
       });
 
@@ -159,60 +128,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
-        var stack = panel.stack ? true : null;
-
-        // Populate element
-        var options = {
-          hooks: {
-            draw: [drawHook],
-            processOffset: [processOffsetHook],
-          },
-          legend: { show: false },
-          series: {
-            stackpercent: panel.stack ? panel.percentage : false,
-            stack: panel.percentage ? null : stack,
-            lines:  {
-              show: panel.lines,
-              zero: false,
-              fill: translateFillOption(panel.fill),
-              lineWidth: panel.linewidth,
-              steps: panel.steppedLine
-            },
-            bars:   {
-              show: panel.bars,
-              fill: 1,
-              barWidth: 1,
-              zero: false,
-              lineWidth: 0
-            },
-            points: {
-              show: panel.points,
-              fill: 1,
-              fillColor: false,
-              radius: panel.points ? panel.pointradius : 2
-            },
-            shadowSize: 0
-          },
-          yaxes: [],
-          xaxis: {},
-          grid: {
-            minBorderMargin: 0,
-            markings: [],
-            backgroundColor: null,
-            borderWidth: 0,
-            hoverable: true,
-            color: '#c8c8c8',
-            margin: { left: 0, right: 0 },
-          },
-          selection: {
-            mode: "x",
-            color: '#666'
-          },
-          crosshair: {
-            mode: panel.tooltip.shared || dashboard.sharedCrosshair ? "x" : null
-          }
-        };
-
         for (var i = 0; i < data.length; i++) {
           var series = data[i];
 
@@ -245,21 +160,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             values: values
           }
 
-          // if hidden remove points and disable stack
+          // if hidden remove points
           if (ctrl.hiddenSeries[series.alias]) {
             series.data = [];
-            series.stack = false;
           }
         }
-
-        //if (data.length && data[0].stats.timeStep) {
-        //  options.series.bars.barWidth = data[0].stats.timeStep / 1.5;
-        //}
-
-        addTimeAxis(options);
-        addGridThresholds(options, panel);
-        addAnnotations(options);
-        //configureAxisOptions(data, options);
 
         sortedSeries = _.chain(data)
         .map(function(series) {
@@ -291,7 +196,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             }
             elem.epoch(heatmapOptions);
           } catch (e) {
-            console.log('flotcharts error', e);
+            console.log('epoch error', e);
           }
 
           if (incrementRenderCounter) {
@@ -310,10 +215,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }
       }
 
-      function translateFillOption(fill) {
-        return fill === 0 ? 0.001 : fill/10;
-      }
-
       function shouldDelayDraw(panel) {
         if (panel.legend.rightSide) {
           return true;
@@ -321,149 +222,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (legendSideLastValue !== null && panel.legend.rightSide !== legendSideLastValue) {
           return true;
         }
-      }
-
-      function addTimeAxis(options) {
-        var ticks = elem.width() / 100;
-        var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
-        var max = _.isUndefined(ctrl.range.to) ? null : ctrl.range.to.valueOf();
-
-        options.xaxis = {
-          timezone: dashboard.getTimezone(),
-          show: panel['x-axis'],
-          mode: "time",
-          min: min,
-          max: max,
-          label: "Datetime",
-          ticks: ticks,
-          timeformat: time_format(ticks, min, max),
-        };
-      }
-
-      function addGridThresholds(options, panel) {
-        if (_.isNumber(panel.grid.threshold1)) {
-          var limit1 = panel.grid.thresholdLine ? panel.grid.threshold1 : (panel.grid.threshold2 || null);
-          options.grid.markings.push({
-            yaxis: { from: panel.grid.threshold1, to: limit1 },
-            color: panel.grid.threshold1Color
-          });
-
-          if (_.isNumber(panel.grid.threshold2)) {
-            var limit2;
-            if (panel.grid.thresholdLine) {
-              limit2 = panel.grid.threshold2;
-            } else {
-              limit2 = panel.grid.threshold1 > panel.grid.threshold2 ?  -Infinity : +Infinity;
-            }
-            options.grid.markings.push({
-              yaxis: { from: panel.grid.threshold2, to: limit2 },
-              color: panel.grid.threshold2Color
-            });
-          }
-        }
-      }
-
-      function addAnnotations(options) {
-        if(!annotations || annotations.length === 0) {
-          return;
-        }
-
-        var types = {};
-
-        _.each(annotations, function(event) {
-          if (!types[event.annotation.name]) {
-            types[event.annotation.name] = {
-              color: event.annotation.iconColor,
-              position: 'BOTTOM',
-              markerSize: 5,
-            };
-          }
-        });
-
-        options.events = {
-          levels: _.keys(types).length + 1,
-          data: annotations,
-          types: types,
-        };
-      }
-
-      function configureAxisOptions(data, options) {
-        var defaults = {
-          position: 'left',
-          show: panel.yaxes[0].show,
-          min: panel.yaxes[0].min,
-          index: 1,
-          logBase: panel.yaxes[0].logBase || 1,
-          max: panel.percentage && panel.stack ? 100 : panel.yaxes[0].max,
-        };
-
-        options.yaxes.push(defaults);
-
-        if (_.findWhere(data, {yaxis: 2})) {
-          var secondY = _.clone(defaults);
-          secondY.index = 2,
-          secondY.show = panel.yaxes[1].show;
-          secondY.logBase = panel.yaxes[1].logBase || 1,
-          secondY.position = 'right';
-          secondY.min = panel.yaxes[1].min;
-          secondY.max = panel.percentage && panel.stack ? 100 : panel.yaxes[1].max;
-          options.yaxes.push(secondY);
-
-          applyLogScale(options.yaxes[1], data);
-          configureAxisMode(options.yaxes[1], panel.percentage && panel.stack ? "percent" : panel.yaxes[1].format);
-        }
-
-        applyLogScale(options.yaxes[0], data);
-        configureAxisMode(options.yaxes[0], panel.percentage && panel.stack ? "percent" : panel.yaxes[0].format);
-      }
-
-      function applyLogScale(axis, data) {
-        if (axis.logBase === 1) {
-          return;
-        }
-
-        var series, i;
-        var max = axis.max;
-
-        if (max === null) {
-          for (i = 0; i < data.length; i++) {
-            series = data[i];
-            if (series.yaxis === axis.index) {
-              if (max < series.stats.max) {
-                max = series.stats.max;
-              }
-            }
-          }
-          if (max === void 0) {
-            max = Number.MAX_VALUE;
-          }
-        }
-
-        axis.min = axis.min !== null ? axis.min : 0;
-        axis.ticks = [0, 1];
-        var nextTick = 1;
-
-        while (true) {
-          nextTick = nextTick * axis.logBase;
-          axis.ticks.push(nextTick);
-          if (nextTick > max) {
-            break;
-          }
-        }
-
-        if (axis.logBase === 10) {
-          axis.transform = function(v) { return Math.log(v+0.1); };
-          axis.inverseTransform  = function (v) { return Math.pow(10,v); };
-        } else {
-          axis.transform = function(v) { return Math.log(v+0.1) / Math.log(axis.logBase); };
-          axis.inverseTransform  = function (v) { return Math.pow(axis.logBase,v); };
-        }
-      }
-
-      function configureAxisMode(axis, format) {
-        axis.tickFormatter = function(val, axis) {
-          return kbn.valueFormats[format](val, axis.tickDecimals, axis.scaledDecimals);
-        };
       }
 
       function time_format(ticks, min, max) {
@@ -490,75 +248,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
         return "%H:%M";
       }
-
-      function render_panel_as_graphite_png(url) {
-        url += '&width=' + elem.width();
-        url += '&height=' + elem.css('height').replace('px', '');
-        url += '&bgcolor=1f1f1f'; // @grayDarker & @grafanaPanelBackground
-        url += '&fgcolor=BBBFC2'; // @textColor & @grayLighter
-        url += panel.stack ? '&areaMode=stacked' : '';
-        url += panel.fill !== 0 ? ('&areaAlpha=' + (panel.fill/10).toFixed(1)) : '';
-        url += panel.linewidth !== 0 ? '&lineWidth=' + panel.linewidth : '';
-        url += panel.legend.show ? '&hideLegend=false' : '&hideLegend=true';
-        url += panel.grid.leftMin !== null ? '&yMin=' + panel.grid.leftMin : '';
-        url += panel.grid.leftMax !== null ? '&yMax=' + panel.grid.leftMax : '';
-        url += panel.grid.rightMin !== null ? '&yMin=' + panel.grid.rightMin : '';
-        url += panel.grid.rightMax !== null ? '&yMax=' + panel.grid.rightMax : '';
-        url += panel['x-axis'] ? '' : '&hideAxes=true';
-        url += panel['y-axis'] ? '' : '&hideYAxis=true';
-
-        switch(panel.yaxes[0].format) {
-          case 'bytes':
-            url += '&yUnitSystem=binary';
-            break;
-          case 'bits':
-            url += '&yUnitSystem=binary';
-            break;
-          case 'bps':
-            url += '&yUnitSystem=si';
-            break;
-          case 'pps':
-            url += '&yUnitSystem=si';
-            break;
-          case 'Bps':
-            url += '&yUnitSystem=si';
-            break;
-          case 'short':
-            url += '&yUnitSystem=si';
-            break;
-          case 'joule':
-            url += '&yUnitSystem=si';
-            break;
-          case 'watt':
-            url += '&yUnitSystem=si';
-            break;
-          case 'ev':
-            url += '&yUnitSystem=si';
-            break;
-          case 'none':
-            url += '&yUnitSystem=none';
-            break;
-        }
-
-        switch(panel.nullPointMode) {
-          case 'connected':
-            url += '&lineMode=connected';
-            break;
-          case 'null':
-            break; // graphite default lineMode
-          case 'null as zero':
-            url += "&drawNullAsZero=true";
-            break;
-        }
-
-        url += panel.steppedLine ? '&lineMode=staircase' : '';
-
-        elem.html('<img src="' + url + '"></img>');
-      }
-
-      new GraphTooltip(elem, dashboard, scope, function() {
-        return sortedSeries;
-      });
 
       elem.bind("plotselected", function (event, ranges) {
         scope.$apply(function() {
