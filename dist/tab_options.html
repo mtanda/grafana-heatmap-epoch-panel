@@ -1,0 +1,27 @@
+<div class="editor-row">
+	<div class="section gf-form-group">
+		<h5 class="section-heading">Heatmap</h5>
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label width-10">Window Size</label>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.windowSize" ng-change="ctrl.render()" ng-model-onblur>
+			</div>
+		</div>
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label width-10">Buckets</label>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.buckets" ng-change="ctrl.render()" ng-model-onblur>
+			</div>
+		</div>
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label width-10">Bucket Lower</label>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.bucketRangeLower" ng-change="ctrl.render()" ng-model-onblur>
+			</div>
+			<div class="gf-form">
+				<label class="gf-form-label width-10">Bucket Upper</label>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.bucketRangeUpper" ng-change="ctrl.render()" ng-model-onblur>
+			</div>
+		</div>
+	</div>
+</div>
