@@ -52,13 +52,6 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.addEditorTab('Legend', 'public/app/plugins/panel/graph/tab_legend.html', 2);
     this.addEditorTab('Heatmap Options', 'public/plugins/grafana-heatmap-epoch-panel/tab_options.html', 3);
 
-    this.logScales = {
-      'linear': 1,
-      'log (base 2)': 2,
-      'log (base 10)': 10,
-      'log (base 32)': 32,
-      'log (base 1024)': 1024
-    };
     this.unitFormats = kbn.getUnitFormats();
   }
 

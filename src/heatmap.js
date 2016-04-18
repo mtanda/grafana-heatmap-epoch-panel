@@ -64,54 +64,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
         if (!setElementHeight()) { return true; }
 
-        if(_.isString(data)) {
-          render_panel_as_graphite_png(data);
-          return true;
-        }
-
         if (elem.width() === 0) {
           return true;
-        }
-      }
-
-      function drawHook(plot) {
-        // Update legend values
-        var yaxis = plot.getYAxes();
-        for (var i = 0; i < data.length; i++) {
-          var series = data[i];
-          var axis = yaxis[series.yaxis - 1];
-          var formater = kbn.valueFormats[panel.yaxes[series.yaxis - 1].format];
-
-          // decimal override
-          if (_.isNumber(panel.decimals)) {
-            series.updateLegendValues(formater, panel.decimals, null);
-          } else {
-            // auto decimals
-            // legend and tooltip gets one more decimal precision
-            // than graph legend ticks
-            var tickDecimals = (axis.tickDecimals || -1) + 1;
-            series.updateLegendValues(formater, tickDecimals, axis.scaledDecimals + 2);
-          }
-
-          if(!rootScope.$$phase) { scope.$digest(); }
-        }
-
-        // add left axis labels
-        if (panel.yaxes[0].label) {
-          var yaxisLabel = $("<div class='axisLabel left-yaxis-label'></div>")
-            .text(panel.yaxes[0].label)
-            .appendTo(elem);
-
-          yaxisLabel.css("margin-top", yaxisLabel.width() / 2);
-        }
-
-        // add right axis labels
-        if (panel.yaxes[1].label) {
-          var rightLabel = $("<div class='axisLabel right-yaxis-label'></div>")
-            .text(panel.yaxes[1].label)
-            .appendTo(elem);
-
-          rightLabel.css("margin-top", rightLabel.width() / 2);
         }
       }
 
@@ -222,31 +176,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (legendSideLastValue !== null && panel.legend.rightSide !== legendSideLastValue) {
           return true;
         }
-      }
-
-      function time_format(ticks, min, max) {
-        if (min && max && ticks) {
-          var range = max - min;
-          var secPerTick = (range/ticks) / 1000;
-          var oneDay = 86400000;
-          var oneYear = 31536000000;
-
-          if (secPerTick <= 45) {
-            return "%H:%M:%S";
-          }
-          if (secPerTick <= 7200 || range <= oneDay) {
-            return "%H:%M";
-          }
-          if (secPerTick <= 80000) {
-            return "%m/%d %H:%M";
-          }
-          if (secPerTick <= 2419200 || range <= oneYear) {
-            return "%m/%d";
-          }
-          return "%Y-%m";
-        }
-
-        return "%H:%M";
       }
 
       elem.bind("plotselected", function (event, ranges) {
