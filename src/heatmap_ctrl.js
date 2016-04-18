@@ -67,6 +67,15 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
   }
 
   issueQueries(datasource) {
+    if (!this.panel.targets || this.panel.targets.length === 0) {
+      return this.$q.when([]);
+    }
+
+    this.panel.targets = _.map(this.panel.targets, function (target) {
+      target.delta = true; // notify delta support
+      return target;
+    });
+
     return super.issueQueries(datasource);
   }
 
@@ -103,7 +112,7 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     var series = new TimeSeries({
       datapoints: datapoints,
       alias: alias,
-      color: color,
+      color: this.panel.targets[index].delta || false, // use color as delta temporaly
       unit: seriesData.unit,
     });
 

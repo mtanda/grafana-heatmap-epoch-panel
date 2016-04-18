@@ -100,8 +100,10 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
         }
 
+        var delta = true;
         for (var i = 0; i < data.length; i++) {
           var series = data[i];
+          delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
 
           var values = _.chain(series.datapoints)
           .reject(function(dp) {
@@ -160,7 +162,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           }
         }
 
-        if (shouldDelayDraw(panel)) {
+        if (epoch && delta) {
+          epoch.push(sortedSeries);
+          ctrl.renderingCompleted();
+        }
+        else if (shouldDelayDraw(panel)) {
           // temp fix for legends on the side, need to render twice to get dimensions right
           callPlot(false);
           setTimeout(function() { callPlot(true); }, 50);

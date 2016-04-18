@@ -167,6 +167,15 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
         }, {
           key: 'issueQueries',
           value: function issueQueries(datasource) {
+            if (!this.panel.targets || this.panel.targets.length === 0) {
+              return this.$q.when([]);
+            }
+
+            this.panel.targets = _.map(this.panel.targets, function (target) {
+              target.delta = true; // notify delta support
+              return target;
+            });
+
             return _get(Object.getPrototypeOf(HeatmapEpochCtrl.prototype), 'issueQueries', this).call(this, datasource);
           }
         }, {
@@ -208,7 +217,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
             var series = new TimeSeries({
               datapoints: datapoints,
               alias: alias,
-              color: color,
+              color: this.panel.targets[index].delta || false, // use color as delta temporaly
               unit: seriesData.unit
             });
 
