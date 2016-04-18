@@ -103,7 +103,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
 
               var heatmapOptions = {
                 type: 'time.heatmap',
-                data: sortedSeries,
                 axes: ['left', 'bottom', 'right'],
                 opacity: function opacity(value, max) {
                   return Math.pow(value / max, 0.7);
@@ -157,6 +156,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               }).sortBy(function (series) {
                 return series.label;
               }).value();
+              heatmapOptions.data = sortedSeries;
 
               function callPlot(incrementRenderCounter) {
                 try {

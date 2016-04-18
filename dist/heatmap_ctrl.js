@@ -188,12 +188,6 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
         }, {
           key: 'onDataReceived',
           value: function onDataReceived(dataList) {
-            // png renderer returns just a url
-            if (_.isString(dataList)) {
-              this.render(dataList);
-              return;
-            }
-
             this.datapointsWarning = false;
             this.datapointsCount = 0;
             this.datapointsOutside = false;
