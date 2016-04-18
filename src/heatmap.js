@@ -18,6 +18,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var sortedSeries;
       var legendSideLastValue = null;
       var rootScope = scope.$root;
+      var epoch = null;
 
       // Receive render events
       ctrl.events.on('render', function(renderData) {
@@ -82,6 +83,23 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
+        var heatmapOptions = {
+          type: 'time.heatmap',
+          axes: ['left', 'bottom', 'right'],
+          opacity: function(value, max) {
+            return Math.pow((value/max), 0.7);
+          }
+        };
+        if (panel.windowSize) {
+          heatmapOptions.windowSize = panel.windowSize;
+        }
+        if (panel.buckets) {
+          heatmapOptions.buckets = panel.buckets;
+        }
+        if (panel.bucketRangeLower && panel.bucketRangeUpper) {
+          heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
+        }
+
         for (var i = 0; i < data.length; i++) {
           var series = data[i];
 
@@ -128,27 +146,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return series.label;
         })
         .value();
+        heatmapOptions.data = sortedSeries;
 
         function callPlot(incrementRenderCounter) {
           try {
-            var heatmapOptions = {
-              type: 'time.heatmap',
-              data: sortedSeries,
-              axes: ['left', 'bottom', 'right'],
-              opacity: function(value, max) {
-                return Math.pow((value/max), 0.7);
-              }
-            };
-            if (panel.windowSize) {
-              heatmapOptions.windowSize = panel.windowSize;
-            }
-            if (panel.buckets) {
-              heatmapOptions.buckets = panel.buckets;
-            }
-            if (panel.bucketRangeLower && panel.bucketRangeUpper) {
-              heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
-            }
-            elem.epoch(heatmapOptions);
+            epoch = elem.epoch(heatmapOptions);
           } catch (e) {
             console.log('epoch error', e);
           }
