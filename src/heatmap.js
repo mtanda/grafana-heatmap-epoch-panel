@@ -19,6 +19,9 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var legendSideLastValue = null;
       var rootScope = scope.$root;
       var epoch = null;
+      var labelToModelIndexMap = {};
+      var startTime = null;
+      var currentDatasource = '';
 
       // Receive render events
       ctrl.events.on('render', function(renderData) {
@@ -77,9 +80,9 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (right.show && right.label) { gridMargin.right = 20; }
       }
 
-      function callPlot(incrementRenderCounter, heatmapOptions) {
+      function callPlot(incrementRenderCounter) {
         try {
-          epoch = elem.epoch(heatmapOptions);
+          epoch = elem.epoch(panel.heatmapOptions);
         } catch (e) {
           console.log('epoch error', e);
         }
@@ -95,8 +98,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
-        var startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
-        var ticksTime = panel.ticksTime || 15;
+        if (panel.datasource !== currentDatasource) {
+          startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
+          epoch = null;
+        }
+        currentDatasource = panel.datasource;
 
         var delta = true;
         var seriesData = _.map(data, function (series, i) {
@@ -114,12 +120,12 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             return dp[0] === null;
           })
           .groupBy(function(dp) {
-            return Math.floor(dp[1] / ticksTime / 1000); // group by time
+            return Math.floor(dp[1] / panel.heatmapOptions.ticks.time / 1000); // group by time
           })
           .map(function(values, timeGroupKey) {
             return [
               // time
-              Math.floor(timeGroupKey * ticksTime),
+              Math.floor(timeGroupKey * panel.heatmapOptions.ticks.time),
               // count
               _.chain(values)
               .map(function (value) {
@@ -140,48 +146,80 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
           return result;
         });
-        var labels = _.map(data, function (series) {
-          return series.label;
-        });
 
         if (epoch && delta) {
-          //epoch.push(sortedSeries);
+          var indexedData = [];
+          var dataLength = 0;
+          _.each(data, function (series) {
+            var values = _.chain(series.datapoints)
+            .reject(function(dp) {
+              return dp[0] === null;
+            })
+            .sortBy(function(dp) {
+              return dp[1];
+            })
+            .map(function(dp) {
+              return {
+                time: dp[1],
+                value: dp[0]
+              }
+            })
+            .groupBy(function(dp) {
+              return dp.time / panel.heatmapOptions.ticks.time;
+            })
+            .map(function(values, time) {
+              return {
+                time: Math.floor(time * panel.heatmapOptions.ticks.time / 1000),
+                histogram: _.countBy(values, function(value) {
+                  return value.value;
+                })
+              };
+            }).value();
+
+            if (!_.isUndefined(labelToModelIndexMap[series.label])) {
+              indexedData[labelToModelIndexMap[series.label]] = values;
+              if (dataLength < values.length) {
+                dataLength = values.length;
+              }
+            }
+          });
+
+          if (!_.isEmpty(indexedData)) {
+            var now = new Date() / 1000;
+            for (var n = 0; n < dataLength; n++) {
+              var pushData = indexedData.map(function (d) {
+                return d[n] || {
+                  time: now,
+                  histogram: {
+                    0: 0
+                  }
+                };
+              });
+              epoch.push(pushData);
+            }
+          }
           ctrl.renderingCompleted();
         } else {
-          var heatmapOptions = {
-            type: 'time.heatmap',
-            axes: ['left', 'bottom'],
-            opacity: function(value, max) {
-              return Math.pow((value/max), 0.7);
-            }
-          };
-          if (panel.windowSize) {
-            heatmapOptions.windowSize = panel.windowSize;
-          }
-          if (panel.buckets) {
-            heatmapOptions.buckets = panel.buckets;
-          }
-          if (panel.bucketRangeLower && panel.bucketRangeUpper) {
-            heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
-          }
-          heatmapOptions.ticks = {};
-          heatmapOptions.ticks.time = ticksTime;
-          heatmapOptions.ticks.left = panel.ticksLeft || 5;
-          heatmapOptions.ticks.Right = panel.ticksRight || 5;
+          var labels = _.map(data, function (series) {
+            return series.label;
+          });
+          _.each(data, function (series, i) {
+            labelToModelIndexMap[series.label] = i;
+          });
 
-          heatmapOptions.startTime = startTime;
+          panel.heatmapOptions.startTime = startTime;
 
           var model = new Epoch.Model({ dataFormat: 'array', startTime: startTime, labels: labels });
           model.setData(seriesData);
-          heatmapOptions.model = model;
+          panel.heatmapOptions.model = model;
 
           if (shouldDelayDraw(panel)) {
             // temp fix for legends on the side, need to render twice to get dimensions right
-            callPlot(false, heatmapOptions);
-            setTimeout(function() { callPlot(true, heatmapOptions); }, 50);
+            callPlot(false);
+            setTimeout(function() { callPlot(true); }, 50);
             legendSideLastValue = panel.legend.rightSide;
           } else {
-            callPlot(true, heatmapOptions);
+            callPlot(true);
           }
         }
       }

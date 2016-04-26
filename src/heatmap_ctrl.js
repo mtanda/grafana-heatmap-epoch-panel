@@ -10,6 +10,22 @@ import {MetricsPanelCtrl} from 'app/plugins/sdk';
 var panelDefaults = {
   // datasource name, null = default datasource
   datasource: null,
+  // heatmap options
+  heatmapOptions: {
+    type: 'time.heatmap',
+    axes: ['left', 'bottom'],
+    opacity: function(value, max) {
+      return Math.pow((value/max), 0.7);
+    },
+    windowSize: null,
+    buckets: null,
+    bucketRange: [0, 100],
+    ticks: {
+      time: 15, // TODO
+      left: 5,
+      right: 5
+    }
+  },
   // legend options
   legend: {
     show: true, // disable/enable legend
@@ -112,7 +128,7 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     var series = new TimeSeries({
       datapoints: datapoints,
       alias: alias,
-      color: seriesData.delta || false, // use color as delta temporaly // TODO: fix
+      color: seriesData.delta || false, // TODO: fix, use color as delta temporaly
       unit: seriesData.unit,
     });
 
