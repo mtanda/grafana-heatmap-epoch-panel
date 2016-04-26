@@ -16,6 +16,12 @@ module.exports = function(grunt) {
         src: ['**/*', '!**/*.js', '!**/*.scss'],
         dest: 'dist'
       },
+      bower_to_dist: {
+        cwd: 'src',
+        expand: true,
+        src: ['bower_components/**/*.js'],
+        dest: 'dist'
+      },
       img_to_dist: {
         cwd: 'src',
         expand: true,
@@ -56,5 +62,5 @@ module.exports = function(grunt) {
 
   });
 
-  grunt.registerTask('default', ['clean', 'copy:src_to_dist', 'copy:img_to_dist', 'copy:pluginDef', 'babel']);
+  grunt.registerTask('default', ['clean', 'copy:src_to_dist', 'copy:bower_to_dist', 'copy:img_to_dist', 'copy:pluginDef', 'babel']);
 };
