@@ -159,10 +159,9 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
           heatmapOptions.startTime = startTime;
 
-          var model = new Epoch.Model({ dataFormat: 'array' });
+          var model = new Epoch.Model({ dataFormat: 'array', startTime: startTime, labels: labels });
           model.setData(seriesData);
           heatmapOptions.model = model;
-          heatmapOptions.labels = labels;
 
           function callPlot(incrementRenderCounter) {
             try {
