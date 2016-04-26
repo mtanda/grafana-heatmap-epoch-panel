@@ -128,6 +128,9 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
           return result;
         });
+        var labels = _.map(data, function (series) {
+          return series.label;
+        });
 
         if (epoch && delta) {
           //epoch.push(sortedSeries);
@@ -159,6 +162,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           var model = new Epoch.Model({ dataFormat: 'array' });
           model.setData(seriesData);
           heatmapOptions.model = model;
+          heatmapOptions.labels = labels;
 
           function callPlot(incrementRenderCounter) {
             try {
