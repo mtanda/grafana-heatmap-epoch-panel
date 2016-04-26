@@ -83,97 +83,103 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
-        var heatmapOptions = {
-          type: 'time.heatmap',
-          axes: ['left', 'bottom', 'right'],
-          opacity: function(value, max) {
-            return Math.pow((value/max), 0.7);
-          }
-        };
-        if (panel.windowSize) {
-          heatmapOptions.windowSize = panel.windowSize;
-        }
-        if (panel.buckets) {
-          heatmapOptions.buckets = panel.buckets;
-        }
-        if (panel.bucketRangeLower && panel.bucketRangeUpper) {
-          heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
-        }
+        var startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
+        var ticksTime = panel.ticksTime || 15;
 
         var delta = true;
-        for (var i = 0; i < data.length; i++) {
-          var series = data[i];
+        var seriesData = _.map(data, function (series, i) {
           delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
-
-          var values = _.chain(series.datapoints)
-          .reject(function(dp) {
-            return dp[0] === null;
-          })
-          .sortBy(function(dp) {
-            return dp[1];
-          })
-          .map(function(dp) {
-            return {
-              time: dp[1],
-              value: dp[0]
-            }
-          })
-          .groupBy(function(dp) {
-            return dp.time;
-          })
-          .map(function(values, time) {
-            return {
-              time: Math.floor(time / 1000),
-              histogram: _.countBy(values, function(value) {
-                return value.value;
-              })
-            };
-          }).value();
-          series.data = {
-            label: series.label,
-            values: values
-          }
 
           // if hidden remove points
           if (ctrl.hiddenSeries[series.alias]) {
-            series.data = [];
-          }
-        }
-
-        sortedSeries = _.chain(data)
-        .map(function(series) {
-          return series.data;
-        })
-        .sortBy(function(series) {
-          return series.label;
-        })
-        .value();
-        heatmapOptions.data = sortedSeries;
-
-        function callPlot(incrementRenderCounter) {
-          try {
-            epoch = elem.epoch(heatmapOptions);
-          } catch (e) {
-            console.log('epoch error', e);
+            return [];
           }
 
-          if (incrementRenderCounter) {
-            ctrl.renderingCompleted();
-          }
-        }
+          var result = [];
+          var minIndex = Number.MAX_VALUE;
+          _.chain(series.datapoints)
+          .reject(function(dp) {
+            return dp[0] === null;
+          })
+          .groupBy(function(dp) {
+            return Math.floor(dp[1] / ticksTime / 1000); // group by time
+          })
+          .map(function(values, timeGroupKey) {
+            return [
+              // time
+              Math.floor(timeGroupKey * ticksTime),
+              // count
+              _.chain(values)
+              .map(function (value) {
+                return value[0]; // pick value
+              })
+              .countBy(function(value) {
+                return value;
+              }).value()
+            ];
+          })
+          .each(function(v) {
+            var index = v[0] - startTime;
+            if (index < minIndex) {
+              minIndex = index;
+            }
+            result[index] = v[1];
+          });
+
+          return result;
+        });
 
         if (epoch && delta) {
-          epoch.push(sortedSeries);
+          //epoch.push(sortedSeries);
           ctrl.renderingCompleted();
-        }
-        else if (shouldDelayDraw(panel)) {
-          // temp fix for legends on the side, need to render twice to get dimensions right
-          callPlot(false);
-          setTimeout(function() { callPlot(true); }, 50);
-          legendSideLastValue = panel.legend.rightSide;
-        }
-        else {
-          callPlot(true);
+        } else {
+          var heatmapOptions = {
+            type: 'time.heatmap',
+            axes: ['left', 'bottom'],
+            opacity: function(value, max) {
+              return Math.pow((value/max), 0.7);
+            }
+          };
+          if (panel.windowSize) {
+            heatmapOptions.windowSize = panel.windowSize;
+          }
+          if (panel.buckets) {
+            heatmapOptions.buckets = panel.buckets;
+          }
+          if (panel.bucketRangeLower && panel.bucketRangeUpper) {
+            heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
+          }
+          heatmapOptions.ticks = {};
+          heatmapOptions.ticks.time = ticksTime;
+          heatmapOptions.ticks.left = panel.ticksLeft || 5;
+          heatmapOptions.ticks.Right = panel.ticksRight || 5;
+
+          heatmapOptions.startTime = startTime;
+
+          var model = new Epoch.Model({ dataFormat: 'array' });
+          model.setData(seriesData);
+          heatmapOptions.model = model;
+
+          function callPlot(incrementRenderCounter) {
+            try {
+              epoch = elem.epoch(heatmapOptions);
+            } catch (e) {
+              console.log('epoch error', e);
+            }
+
+            if (incrementRenderCounter) {
+              ctrl.renderingCompleted();
+            }
+          }
+
+          if (shouldDelayDraw(panel)) {
+            // temp fix for legends on the side, need to render twice to get dimensions right
+            callPlot(false);
+            setTimeout(function() { callPlot(true); }, 50);
+            legendSideLastValue = panel.legend.rightSide;
+          } else {
+            callPlot(true);
+          }
         }
       }
 
