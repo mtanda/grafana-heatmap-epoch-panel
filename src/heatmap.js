@@ -77,6 +77,18 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (right.show && right.label) { gridMargin.right = 20; }
       }
 
+      function callPlot(incrementRenderCounter, heatmapOptions) {
+        try {
+          epoch = elem.epoch(heatmapOptions);
+        } catch (e) {
+          console.log('epoch error', e);
+        }
+
+        if (incrementRenderCounter) {
+          ctrl.renderingCompleted();
+        }
+      }
+
       // Function for rendering panel
       function render_panel() {
         if (shouldAbortRender()) {
@@ -163,25 +175,13 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           model.setData(seriesData);
           heatmapOptions.model = model;
 
-          function callPlot(incrementRenderCounter) {
-            try {
-              epoch = elem.epoch(heatmapOptions);
-            } catch (e) {
-              console.log('epoch error', e);
-            }
-
-            if (incrementRenderCounter) {
-              ctrl.renderingCompleted();
-            }
-          }
-
           if (shouldDelayDraw(panel)) {
             // temp fix for legends on the side, need to render twice to get dimensions right
-            callPlot(false);
-            setTimeout(function() { callPlot(true); }, 50);
+            callPlot(false, heatmapOptions);
+            setTimeout(function() { callPlot(true, heatmapOptions); }, 50);
             legendSideLastValue = panel.legend.rightSide;
           } else {
-            callPlot(true);
+            callPlot(true, heatmapOptions);
           }
         }
       }
