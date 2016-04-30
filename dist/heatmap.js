@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.min.js'], function (_export, _context) {
+System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.js'], function (_export, _context) {
   var angular, $, moment, _, kbn;
 
   return {
@@ -14,7 +14,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
       _ = _lodash.default;
     }, function (_appCoreUtilsKbn) {
       kbn = _appCoreUtilsKbn.default;
-    }, function (_bower_componentsD3D3MinJs) {}, function (_bower_componentsEpochDistJsEpochMinJs) {}],
+    }, function (_bower_componentsD3D3MinJs) {}, function (_bower_componentsEpochDistJsEpochJs) {}],
     execute: function () {
 
       angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function ($rootScope, timeSrv) {
@@ -30,6 +30,9 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
             var legendSideLastValue = null;
             var rootScope = scope.$root;
             var epoch = null;
+            var labelToModelIndexMap = {};
+            var startTime = null;
+            var currentDatasource = '';
 
             // Receive render events
             ctrl.events.on('render', function (renderData) {
@@ -95,95 +98,137 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               }
             }
 
+            function callPlot(incrementRenderCounter) {
+              try {
+                epoch = elem.epoch(panel.heatmapOptions);
+              } catch (e) {
+                console.log('epoch error', e);
+              }
+
+              if (incrementRenderCounter) {
+                ctrl.renderingCompleted();
+              }
+            }
+
             // Function for rendering panel
             function render_panel() {
               if (shouldAbortRender()) {
                 return;
               }
 
-              var heatmapOptions = {
-                type: 'time.heatmap',
-                axes: ['left', 'bottom', 'right'],
-                opacity: function opacity(value, max) {
-                  return Math.pow(value / max, 0.7);
-                }
-              };
-              if (panel.windowSize) {
-                heatmapOptions.windowSize = panel.windowSize;
+              if (panel.datasource !== currentDatasource) {
+                startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
+                epoch = null;
               }
-              if (panel.buckets) {
-                heatmapOptions.buckets = panel.buckets;
-              }
-              if (panel.bucketRangeLower && panel.bucketRangeUpper) {
-                heatmapOptions.bucketRange = [panel.bucketRangeLower, panel.bucketRangeUpper];
-              }
+              currentDatasource = panel.datasource;
 
               var delta = true;
-              for (var i = 0; i < data.length; i++) {
-                var series = data[i];
+              var seriesData = _.map(data, function (series, i) {
                 delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
-
-                var values = _.chain(series.datapoints).reject(function (dp) {
-                  return dp[0] === null;
-                }).sortBy(function (dp) {
-                  return dp[1];
-                }).map(function (dp) {
-                  return {
-                    time: dp[1],
-                    value: dp[0]
-                  };
-                }).groupBy(function (dp) {
-                  return dp.time;
-                }).map(function (values, time) {
-                  return {
-                    time: Math.floor(time / 1000),
-                    histogram: _.countBy(values, function (value) {
-                      return value.value;
-                    })
-                  };
-                }).value();
-                series.data = {
-                  label: series.label,
-                  values: values
-                };
 
                 // if hidden remove points
                 if (ctrl.hiddenSeries[series.alias]) {
-                  series.data = [];
-                }
-              }
-
-              sortedSeries = _.chain(data).map(function (series) {
-                return series.data;
-              }).sortBy(function (series) {
-                return series.label;
-              }).value();
-              heatmapOptions.data = sortedSeries;
-
-              function callPlot(incrementRenderCounter) {
-                try {
-                  epoch = elem.epoch(heatmapOptions);
-                } catch (e) {
-                  console.log('epoch error', e);
+                  return [];
                 }
 
-                if (incrementRenderCounter) {
-                  ctrl.renderingCompleted();
-                }
-              }
+                var result = [];
+                var minIndex = Number.MAX_VALUE;
+                _.chain(series.datapoints).reject(function (dp) {
+                  return dp[0] === null;
+                }).groupBy(function (dp) {
+                  return Math.floor(dp[1] / panel.heatmapOptions.ticks.time / 1000); // group by time
+                }).map(function (values, timeGroupKey) {
+                  return [
+                  // time
+                  Math.floor(timeGroupKey * panel.heatmapOptions.ticks.time),
+                  // count
+                  _.chain(values).map(function (value) {
+                    return value[0]; // pick value
+                  }).countBy(function (value) {
+                    return value;
+                  }).value()];
+                }).each(function (v) {
+                  var index = v[0] - startTime;
+                  if (index < minIndex) {
+                    minIndex = index;
+                  }
+                  result[index] = v[1];
+                });
+
+                return result;
+              });
 
               if (epoch && delta) {
-                epoch.push(sortedSeries);
+                var indexedData = [];
+                var dataLength = 0;
+                _.each(data, function (series) {
+                  var values = _.chain(series.datapoints).reject(function (dp) {
+                    return dp[0] === null;
+                  }).sortBy(function (dp) {
+                    return dp[1];
+                  }).map(function (dp) {
+                    return {
+                      time: dp[1],
+                      value: dp[0]
+                    };
+                  }).groupBy(function (dp) {
+                    return dp.time / panel.heatmapOptions.ticks.time;
+                  }).map(function (values, time) {
+                    return {
+                      time: Math.floor(time * panel.heatmapOptions.ticks.time / 1000),
+                      histogram: _.countBy(values, function (value) {
+                        return value.value;
+                      })
+                    };
+                  }).value();
+
+                  if (!_.isUndefined(labelToModelIndexMap[series.label])) {
+                    indexedData[labelToModelIndexMap[series.label]] = values;
+                    if (dataLength < values.length) {
+                      dataLength = values.length;
+                    }
+                  }
+                });
+
+                if (!_.isEmpty(indexedData)) {
+                  var now = new Date() / 1000;
+                  for (var n = 0; n < dataLength; n++) {
+                    var pushData = indexedData.map(function (d) {
+                      return d[n] || {
+                        time: now,
+                        histogram: {
+                          0: 0
+                        }
+                      };
+                    });
+                    epoch.push(pushData);
+                  }
+                }
                 ctrl.renderingCompleted();
-              } else if (shouldDelayDraw(panel)) {
-                // temp fix for legends on the side, need to render twice to get dimensions right
-                callPlot(false);
-                setTimeout(function () {
-                  callPlot(true);
-                }, 50);
-                legendSideLastValue = panel.legend.rightSide;
               } else {
-                callPlot(true);
+                var labels = _.map(data, function (series) {
+                  return series.label;
+                });
+                _.each(data, function (series, i) {
+                  labelToModelIndexMap[series.label] = i;
+                });
+
+                panel.heatmapOptions.startTime = startTime;
+
+                var model = new Epoch.Model({ dataFormat: 'array', startTime: startTime, labels: labels });
+                model.setData(seriesData);
+                panel.heatmapOptions.model = model;
+
+                if (shouldDelayDraw(panel)) {
+                  // temp fix for legends on the side, need to render twice to get dimensions right
+                  callPlot(false);
+                  setTimeout(function () {
+                    callPlot(true);
+                  }, 50);
+                  legendSideLastValue = panel.legend.rightSide;
+                } else {
+                  callPlot(true);
+                }
               }
             }
 

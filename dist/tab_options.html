@@ -4,23 +4,23 @@
 		<div class="gf-form-inline">
 			<div class="gf-form">
 				<label class="gf-form-label width-10">Window Size</label>
-				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.windowSize" ng-change="ctrl.render()" ng-model-onblur>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.heatmapOptions.windowSize" ng-change="ctrl.render()" ng-model-onblur>
 			</div>
 		</div>
 		<div class="gf-form-inline">
 			<div class="gf-form">
 				<label class="gf-form-label width-10">Buckets</label>
-				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.buckets" ng-change="ctrl.render()" ng-model-onblur>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.heatmapOptions.buckets" ng-change="ctrl.render()" ng-model-onblur>
 			</div>
 		</div>
 		<div class="gf-form-inline">
 			<div class="gf-form">
 				<label class="gf-form-label width-10">Bucket Lower</label>
-				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.bucketRangeLower" ng-change="ctrl.render()" ng-model-onblur>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.heatmapOptions.bucketRange[0]" ng-change="ctrl.render()" ng-model-onblur>
 			</div>
 			<div class="gf-form">
 				<label class="gf-form-label width-10">Bucket Upper</label>
-				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.bucketRangeUpper" ng-change="ctrl.render()" ng-model-onblur>
+				<input type="number" class="gf-form-input width-5" placeholder="auto" data-placement="right" ng-model="ctrl.panel.heatmapOptions.bucketRange[1]" ng-change="ctrl.render()" ng-model-onblur>
 			</div>
 		</div>
 	</div>
