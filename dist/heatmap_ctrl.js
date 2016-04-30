@@ -98,6 +98,22 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
       panelDefaults = {
         // datasource name, null = default datasource
         datasource: null,
+        // heatmap options
+        heatmapOptions: {
+          type: 'time.heatmap',
+          axes: ['left', 'bottom'],
+          opacity: function opacity(value, max) {
+            return Math.pow(value / max, 0.7);
+          },
+          windowSize: null,
+          buckets: null,
+          bucketRange: [0, 100],
+          ticks: {
+            time: 15, // TODO
+            left: 5,
+            right: 5
+          }
+        },
         // legend options
         legend: {
           show: true, // disable/enable legend
@@ -217,7 +233,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
             var series = new TimeSeries({
               datapoints: datapoints,
               alias: alias,
-              color: this.panel.targets[index].delta || false, // use color as delta temporaly
+              color: seriesData.delta || false, // TODO: fix, use color as delta temporaly
               unit: seriesData.unit
             });
 
