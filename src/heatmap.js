@@ -158,20 +158,14 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             .reject(function(dp) {
               return dp[0] === null;
             })
-            .map(function(dp) {
-              return {
-                time: dp[1],
-                value: dp[0]
-              }
-            })
             .groupBy(function(dp) {
-              return dp.time / panel.heatmapOptions.ticks.time;
+              return dp[1] / panel.heatmapOptions.ticks.time;
             })
-            .map(function(values, time) {
+            .map(function(values, timeKey) {
               return {
-                time: Math.floor(time * panel.heatmapOptions.ticks.time / 1000),
+                time: Math.floor(timeKey * panel.heatmapOptions.ticks.time / 1000),
                 histogram: _.countBy(values, function(value) {
-                  return value.value;
+                  return value[0];
                 })
               };
             })
