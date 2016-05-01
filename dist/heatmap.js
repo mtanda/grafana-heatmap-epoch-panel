@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.js'], function (_export, _context) {
+System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.min.js'], function (_export, _context) {
   var angular, $, moment, _, kbn;
 
   return {
@@ -14,7 +14,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
       _ = _lodash.default;
     }, function (_appCoreUtilsKbn) {
       kbn = _appCoreUtilsKbn.default;
-    }, function (_bower_componentsD3D3MinJs) {}, function (_bower_componentsEpochDistJsEpochJs) {}],
+    }, function (_bower_componentsD3D3MinJs) {}, function (_bower_componentsEpochDistJsEpochMinJs) {}],
     execute: function () {
 
       angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function ($rootScope, timeSrv) {
@@ -31,7 +31,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
             var rootScope = scope.$root;
             var epoch = null;
             var labelToModelIndexMap = {};
-            var startTime = null;
             var currentDatasource = '';
 
             // Receive render events
@@ -98,6 +97,23 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               }
             }
 
+            function getHeatmapData(datapoints) {
+              return _.chain(datapoints).reject(function (dp) {
+                return dp[0] === null;
+              }).groupBy(function (dp) {
+                return dp[1] / panel.heatmapOptions.ticks.time;
+              }).map(function (values, timeKey) {
+                return {
+                  time: Math.floor(timeKey * panel.heatmapOptions.ticks.time / 1000),
+                  histogram: _.countBy(values, function (value) {
+                    return value[0];
+                  })
+                };
+              }).sortBy(function (dp) {
+                return dp.time;
+              }).value();
+            }
+
             function callPlot(incrementRenderCounter) {
               try {
                 epoch = elem.epoch(panel.heatmapOptions);
@@ -117,7 +133,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               }
 
               if (panel.datasource !== currentDatasource) {
-                startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
+                panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
                 epoch = null;
               }
               currentDatasource = panel.datasource;
@@ -131,62 +147,24 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                   return [];
                 }
 
-                var result = [];
-                var minIndex = Number.MAX_VALUE;
-                _.chain(series.datapoints).reject(function (dp) {
-                  return dp[0] === null;
-                }).groupBy(function (dp) {
-                  return Math.floor(dp[1] / panel.heatmapOptions.ticks.time / 1000); // group by time
-                }).map(function (values, timeGroupKey) {
-                  return [
-                  // time
-                  Math.floor(timeGroupKey * panel.heatmapOptions.ticks.time),
-                  // count
-                  _.chain(values).map(function (value) {
-                    return value[0]; // pick value
-                  }).countBy(function (value) {
-                    return value;
-                  }).value()];
-                }).each(function (v) {
-                  var index = v[0] - startTime;
-                  if (index < minIndex) {
-                    minIndex = index;
-                  }
-                  result[index] = v[1];
-                });
-
-                return result;
+                return {
+                  label: series.label,
+                  values: getHeatmapData(series.datapoints)
+                };
               });
 
               if (epoch && delta) {
                 var indexedData = [];
                 var dataLength = 0;
                 _.each(data, function (series) {
-                  var values = _.chain(series.datapoints).reject(function (dp) {
-                    return dp[0] === null;
-                  }).sortBy(function (dp) {
-                    return dp[1];
-                  }).map(function (dp) {
-                    return {
-                      time: dp[1],
-                      value: dp[0]
-                    };
-                  }).groupBy(function (dp) {
-                    return dp.time / panel.heatmapOptions.ticks.time;
-                  }).map(function (values, time) {
-                    return {
-                      time: Math.floor(time * panel.heatmapOptions.ticks.time / 1000),
-                      histogram: _.countBy(values, function (value) {
-                        return value.value;
-                      })
-                    };
-                  }).value();
+                  if (_.isUndefined(labelToModelIndexMap[series.label])) {
+                    return;
+                  }
 
-                  if (!_.isUndefined(labelToModelIndexMap[series.label])) {
-                    indexedData[labelToModelIndexMap[series.label]] = values;
-                    if (dataLength < values.length) {
-                      dataLength = values.length;
-                    }
+                  var values = getHeatmapData(series.datapoints);
+                  indexedData[labelToModelIndexMap[series.label]] = values;
+                  if (dataLength < values.length) {
+                    dataLength = values.length;
                   }
                 });
 
@@ -206,18 +184,12 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 }
                 ctrl.renderingCompleted();
               } else {
-                var labels = _.map(data, function (series) {
-                  return series.label;
-                });
+                labelToModelIndexMap = {};
                 _.each(data, function (series, i) {
                   labelToModelIndexMap[series.label] = i;
                 });
 
-                panel.heatmapOptions.startTime = startTime;
-
-                var model = new Epoch.Model({ dataFormat: 'array', startTime: startTime, labels: labels });
-                model.setData(seriesData);
-                panel.heatmapOptions.model = model;
+                panel.heatmapOptions.data = seriesData;
 
                 if (shouldDelayDraw(panel)) {
                   // temp fix for legends on the side, need to render twice to get dimensions right
