@@ -4,7 +4,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import kbn from 'app/core/utils/kbn';
 import './bower_components/d3/d3.min.js';
-import './bower_components/epoch/dist/js/epoch.js';
+import './bower_components/epoch/dist/js/epoch.min.js';
 
 angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($rootScope, timeSrv) {
   return {
