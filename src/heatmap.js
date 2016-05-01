@@ -150,6 +150,10 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           var indexedData = [];
           var dataLength = 0;
           _.each(data, function (series) {
+            if (_.isUndefined(labelToModelIndexMap[series.label])) {
+              return;
+            }
+
             var values = _.chain(series.datapoints)
             .reject(function(dp) {
               return dp[0] === null;
@@ -175,11 +179,9 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               };
             }).value();
 
-            if (!_.isUndefined(labelToModelIndexMap[series.label])) {
-              indexedData[labelToModelIndexMap[series.label]] = values;
-              if (dataLength < values.length) {
-                dataLength = values.length;
-              }
+            indexedData[labelToModelIndexMap[series.label]] = values;
+            if (dataLength < values.length) {
+              dataLength = values.length;
             }
           });
 
