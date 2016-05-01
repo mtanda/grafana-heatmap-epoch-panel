@@ -199,13 +199,14 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           }
           ctrl.renderingCompleted();
         } else {
-          var labels = _.map(data, function (series) {
-            return series.label;
-          });
+          labelToModelIndexMap = {};
           _.each(data, function (series, i) {
             labelToModelIndexMap[series.label] = i;
           });
 
+          var labels = _.map(data, function (series) {
+            return series.label;
+          });
           var model = new Epoch.Model({ dataFormat: 'array', startTime: panel.heatmapOptions.startTime, labels: labels });
           model.setData(seriesData);
           panel.heatmapOptions.model = model;
