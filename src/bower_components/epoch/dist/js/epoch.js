@@ -1050,9 +1050,6 @@ Epoch.Data.Format.array = (function() {
         values: data.map(mapFn)
       }, options, 0));
     }
-    result.forEach(function(r) {
-      r.values = r.values.filter(function(value) { return value; })
-    });
     return result;
   };
   formatBasicPlot = function(data, options) {
