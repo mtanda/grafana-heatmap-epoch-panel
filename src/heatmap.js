@@ -158,9 +158,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             .reject(function(dp) {
               return dp[0] === null;
             })
-            .sortBy(function(dp) {
-              return dp[1];
-            })
             .map(function(dp) {
               return {
                 time: dp[1],
@@ -177,6 +174,9 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
                   return value.value;
                 })
               };
+            })
+            .sortBy(function(dp) {
+              return dp.time;
             }).value();
 
             indexedData[labelToModelIndexMap[series.label]] = values;
