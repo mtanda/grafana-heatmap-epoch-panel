@@ -20,7 +20,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var rootScope = scope.$root;
       var epoch = null;
       var labelToModelIndexMap = {};
-      var startTime = null;
       var currentDatasource = '';
 
       // Receive render events
@@ -99,7 +98,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }
 
         if (panel.datasource !== currentDatasource) {
-          startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
+          panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
           epoch = null;
         }
         currentDatasource = panel.datasource;
@@ -137,7 +136,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             ];
           })
           .each(function(v) {
-            var index = v[0] - startTime;
+            var index = v[0] - panel.heatmapOptions.startTime;
             if (index < minIndex) {
               minIndex = index;
             }
@@ -207,9 +206,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             labelToModelIndexMap[series.label] = i;
           });
 
-          panel.heatmapOptions.startTime = startTime;
-
-          var model = new Epoch.Model({ dataFormat: 'array', startTime: startTime, labels: labels });
+          var model = new Epoch.Model({ dataFormat: 'array', startTime: panel.heatmapOptions.startTime, labels: labels });
           model.setData(seriesData);
           panel.heatmapOptions.model = model;
 
