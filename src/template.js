@@ -13,7 +13,7 @@ var template = `
       </span>
     </div>
 
-    <div grafana-heatmap-epoch class="epoch-theme-default" ng-dblclick="ctrl.zoomOut()">
+    <div grafana-heatmap-epoch class="epoch-theme-dark epoch category20" ng-dblclick="ctrl.zoomOut()">
     </div>
 
   </div>
