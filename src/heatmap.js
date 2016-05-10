@@ -19,6 +19,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var legendSideLastValue = null;
       var rootScope = scope.$root;
       var epoch = null;
+      var firstDraw = true;
+      var delta = true;
       var labelToModelIndexMap = {};
       var currentDatasource = '';
 
@@ -101,22 +103,10 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }).value();
       }
 
-      function callPlot(incrementRenderCounter) {
+      function callPlot(incrementRenderCounter, data) {
         try {
-          epoch = elem.epoch(panel.heatmapOptions);
-          scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
-            epoch.option('windowSize', newVal);
-            epoch.option('historySize', newVal * 3);
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
-            epoch.option('buckets', newVal);
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.bucketRange', function(newVal, oldVal) {
-            epoch.option('bucketRange', newVal);
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
-            epoch.option('startTime', newVal);
-          });
+          epoch.setData(data);
+          epoch.redraw();
         } catch (e) {
           console.log('epoch error', e);
         }
@@ -134,13 +124,62 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
         if (panel.datasource !== currentDatasource) {
           panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
-          epoch = null;
+          firstDraw = true;
         }
         currentDatasource = panel.datasource;
 
-        var delta = true;
+        if (!epoch) {
+          epoch = elem.epoch(panel.heatmapOptions);
+          scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
+            epoch.option('windowSize', newVal);
+            epoch.option('historySize', newVal * 3);
+            epoch.redraw();
+          });
+          scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
+            epoch.option('buckets', newVal);
+          });
+          scope.$watch('ctrl.panel.heatmapOptions.bucketRange', function(newVal, oldVal) {
+            epoch.option('bucketRange', newVal);
+          });
+          scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
+            epoch.option('startTime', newVal);
+          });
+        }
 
-        if (epoch && delta) {
+        if (firstDraw) {
+          delta = true;
+          var seriesData = _.map(data, function (series, i) {
+            delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
+
+            // if hidden remove points
+            if (ctrl.hiddenSeries[series.alias]) {
+              return {};
+            }
+
+            return {
+              label: series.label,
+              values: getHeatmapData(series.datapoints)
+            };
+          });
+
+          if (shouldDelayDraw(panel)) {
+            // temp fix for legends on the side, need to render twice to get dimensions right
+            callPlot(false, seriesData);
+            setTimeout(function() { callPlot(true, seriesData); }, 50);
+            legendSideLastValue = panel.legend.rightSide;
+          } else {
+            callPlot(true, seriesData);
+          }
+
+          if (delta) {
+            firstDraw = false;
+
+            labelToModelIndexMap = {};
+            _.each(data, function (series, i) {
+              labelToModelIndexMap[series.label] = i;
+            });
+          }
+        } else if (delta) {
           var indexedData = [];
           var dataLength = 0;
           _.each(data, function (series) {
@@ -150,6 +189,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
             var values = getHeatmapData(series.datapoints);
             indexedData[labelToModelIndexMap[series.label]] = values;
+
             if (dataLength < values.length) {
               dataLength = values.length;
             }
@@ -170,35 +210,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             }
           }
           ctrl.renderingCompleted();
-        } else {
-          labelToModelIndexMap = {};
-          _.each(data, function (series, i) {
-            labelToModelIndexMap[series.label] = i;
-          });
-
-          var seriesData = _.map(data, function (series, i) {
-            delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
-
-            // if hidden remove points
-            if (ctrl.hiddenSeries[series.alias]) {
-              return {};
-            }
-
-            return {
-              label: series.label,
-              values: getHeatmapData(series.datapoints)
-            };
-          });
-          panel.heatmapOptions.data = seriesData;
-
-          if (shouldDelayDraw(panel)) {
-            // temp fix for legends on the side, need to render twice to get dimensions right
-            callPlot(false);
-            setTimeout(function() { callPlot(true); }, 50);
-            legendSideLastValue = panel.legend.rightSide;
-          } else {
-            callPlot(true);
-          }
         }
       }
 
