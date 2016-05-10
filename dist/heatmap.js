@@ -157,6 +157,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 });
                 scope.$watch('ctrl.panel.heatmapOptions.startTime', function (newVal, oldVal) {
                   epoch.option('startTime', newVal);
+                  epoch.redraw();
                 });
               }
 

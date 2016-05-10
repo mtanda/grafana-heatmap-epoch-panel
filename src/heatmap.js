@@ -143,6 +143,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
           scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
             epoch.option('startTime', newVal);
+            epoch.redraw();
           });
         }
 
