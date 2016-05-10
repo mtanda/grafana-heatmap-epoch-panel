@@ -17,8 +17,9 @@ var panelDefaults = {
     opacity: function(value, max) {
       return Math.pow((value/max), 0.7);
     },
-    windowSize: null,
-    buckets: null,
+    windowSize: 40,
+    historySize: 120,
+    buckets: 10,
     bucketRange: [0, 100],
     ticks: {
       time: 15, // TODO

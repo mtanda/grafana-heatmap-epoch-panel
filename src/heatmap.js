@@ -80,16 +80,17 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       }
 
       function getHeatmapData(datapoints) {
+        var windowInterval = (ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize;
         return _.chain(datapoints)
         .reject(function(dp) {
           return dp[0] === null;
         })
         .groupBy(function(dp) {
-          return dp[1] / panel.heatmapOptions.ticks.time;
+          return Math.floor(dp[1] / windowInterval);
         })
         .map(function(values, timeKey) {
           return {
-            time: Math.floor(timeKey * panel.heatmapOptions.ticks.time / 1000),
+            time: Math.floor(timeKey * windowInterval / 1000),
             histogram: _.countBy(values, function(value) {
               return value[0];
             })
@@ -103,6 +104,16 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       function callPlot(incrementRenderCounter) {
         try {
           epoch = elem.epoch(panel.heatmapOptions);
+          scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
+            epoch.option('windowSize', newVal);
+            epoch.option('historySize', newVal * 3);
+          });
+          scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
+            epoch.option('buckets', newVal);
+          });
+          scope.$watch('ctrl.panel.heatmapOptions.bucketRange', function(newVal, oldVal) {
+            epoch.option('bucketRange', newVal);
+          });
         } catch (e) {
           console.log('epoch error', e);
         }
