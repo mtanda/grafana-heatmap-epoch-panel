@@ -128,28 +128,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }
         currentDatasource = panel.datasource;
 
-        if (!epoch) {
-          epoch = elem.epoch(panel.heatmapOptions);
-          scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
-            epoch.option('windowSize', newVal);
-            epoch.option('historySize', newVal * 3);
-            epoch.redraw();
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
-            epoch.option('buckets', newVal);
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function(newVal, oldVal) {
-            epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function(newVal, oldVal) {
-            epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
-          });
-          scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
-            epoch.option('startTime', newVal);
-            epoch.redraw();
-          });
-        }
-
         if (firstDraw) {
           delta = true;
           var seriesData = _.map(data, function (series, i) {
@@ -165,6 +143,29 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               values: getHeatmapData(series.datapoints)
             };
           });
+
+          panel.heatmapOptions.data = seriesData;
+          if (!epoch) {
+            epoch = elem.epoch(panel.heatmapOptions);
+            scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
+              epoch.option('windowSize', newVal);
+              epoch.option('historySize', newVal * 3);
+              epoch.redraw();
+            });
+            scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
+              epoch.option('buckets', newVal);
+            });
+            scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function(newVal, oldVal) {
+              epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+            });
+            scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function(newVal, oldVal) {
+              epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+            });
+            scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
+              epoch.option('startTime', newVal);
+              epoch.redraw();
+            });
+          }
 
           if (shouldDelayDraw(panel)) {
             // temp fix for legends on the side, need to render twice to get dimensions right
