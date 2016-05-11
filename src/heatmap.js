@@ -138,8 +138,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
             epoch.option('buckets', newVal);
           });
-          scope.$watch('ctrl.panel.heatmapOptions.bucketRange', function(newVal, oldVal) {
-            epoch.option('bucketRange', newVal);
+          scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function(newVal, oldVal) {
+            epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+          });
+          scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function(newVal, oldVal) {
+            epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
           });
           scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
             epoch.option('startTime', newVal);
