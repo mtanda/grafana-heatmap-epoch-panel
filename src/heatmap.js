@@ -23,6 +23,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var delta = true;
       var labelToModelIndexMap = {};
       var currentDatasource = '';
+      var currentTimeRange = [0, 0];
 
       // Receive render events
       ctrl.events.on('render', function(renderData) {
@@ -106,6 +107,12 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       function callPlot(incrementRenderCounter, data) {
         try {
           epoch.setData(data);
+
+          if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
+            epoch.ticksChanged();
+          }
+          currentTimeRange = [ctrl.range.from, ctrl.range.to];
+
           epoch.redraw();
         } catch (e) {
           console.log('epoch error', e);
