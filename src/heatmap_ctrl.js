@@ -7,48 +7,48 @@ import TimeSeries from 'app/core/time_series2';
 import * as fileExport from 'app/core/utils/file_export';
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
 
-var panelDefaults = {
-  // datasource name, null = default datasource
-  datasource: null,
-  // heatmap options
-  heatmapOptions: {
-    type: 'time.heatmap',
-    axes: ['left', 'bottom'],
-    opacity: function(value, max) {
-      return Math.pow((value/max), 0.7);
-    },
-    windowSize: 40,
-    historySize: 120,
-    buckets: 10,
-    bucketRange: [0, 100],
-    ticks: {
-      time: 15, // TODO
-      left: 5,
-      right: 5
-    }
-  },
-  // legend options
-  legend: {
-    show: true, // disable/enable legend
-    values: false, // disable/enable legend values
-    min: false,
-    max: false,
-    current: false,
-    total: false,
-    avg: false
-  },
-  // time overrides
-  timeFrom: null,
-  timeShift: null,
-  // metric queries
-  targets: [{}],
-};
-
 export class HeatmapEpochCtrl extends MetricsPanelCtrl {
   /** @ngInject */
   constructor($scope, $injector, $rootScope, annotationsSrv) {
     super($scope, $injector, annotationsSrv);
     this.$rootScope = $rootScope;
+
+    var panelDefaults = {
+      // datasource name, null = default datasource
+      datasource: null,
+      // heatmap options
+      heatmapOptions: {
+        type: 'time.heatmap',
+        axes: ['left', 'bottom'],
+        opacity: function(value, max) {
+          return Math.pow((value/max), 0.7);
+        },
+        windowSize: 40,
+        historySize: 120,
+        buckets: 10,
+        bucketRange: [0, 100],
+        ticks: {
+          time: 15, // TODO
+          left: 5,
+          right: 5
+        }
+      },
+      // legend options
+      legend: {
+        show: true, // disable/enable legend
+        values: false, // disable/enable legend values
+        min: false,
+        max: false,
+        current: false,
+        total: false,
+        avg: false
+      },
+      // time overrides
+      timeFrom: null,
+      timeShift: null,
+      // metric queries
+      targets: [{}],
+    };
 
     _.defaults(this.panel, angular.copy(panelDefaults));
     _.defaults(this.panel.legend, panelDefaults.legend);

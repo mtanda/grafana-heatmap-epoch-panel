@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodash', 'app/core/time_series2', 'app/core/utils/file_export', 'app/plugins/sdk'], function (_export, _context) {
-  var template, angular, moment, kbn, _, TimeSeries, fileExport, MetricsPanelCtrl, _createClass, _get, panelDefaults, HeatmapEpochCtrl;
+  var template, angular, moment, kbn, _, TimeSeries, fileExport, MetricsPanelCtrl, _createClass, _get, HeatmapEpochCtrl;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -95,43 +95,6 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
         }
       };
 
-      panelDefaults = {
-        // datasource name, null = default datasource
-        datasource: null,
-        // heatmap options
-        heatmapOptions: {
-          type: 'time.heatmap',
-          axes: ['left', 'bottom'],
-          opacity: function opacity(value, max) {
-            return Math.pow(value / max, 0.7);
-          },
-          windowSize: 40,
-          historySize: 120,
-          buckets: 10,
-          bucketRange: [0, 100],
-          ticks: {
-            time: 15, // TODO
-            left: 5,
-            right: 5
-          }
-        },
-        // legend options
-        legend: {
-          show: true, // disable/enable legend
-          values: false, // disable/enable legend values
-          min: false,
-          max: false,
-          current: false,
-          total: false,
-          avg: false
-        },
-        // time overrides
-        timeFrom: null,
-        timeShift: null,
-        // metric queries
-        targets: [{}]
-      };
-
       _export('HeatmapEpochCtrl', HeatmapEpochCtrl = function (_MetricsPanelCtrl) {
         _inherits(HeatmapEpochCtrl, _MetricsPanelCtrl);
 
@@ -143,6 +106,43 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
           var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(HeatmapEpochCtrl).call(this, $scope, $injector, annotationsSrv));
 
           _this.$rootScope = $rootScope;
+
+          var panelDefaults = {
+            // datasource name, null = default datasource
+            datasource: null,
+            // heatmap options
+            heatmapOptions: {
+              type: 'time.heatmap',
+              axes: ['left', 'bottom'],
+              opacity: function opacity(value, max) {
+                return Math.pow(value / max, 0.7);
+              },
+              windowSize: 40,
+              historySize: 120,
+              buckets: 10,
+              bucketRange: [0, 100],
+              ticks: {
+                time: 15, // TODO
+                left: 5,
+                right: 5
+              }
+            },
+            // legend options
+            legend: {
+              show: true, // disable/enable legend
+              values: false, // disable/enable legend values
+              min: false,
+              max: false,
+              current: false,
+              total: false,
+              avg: false
+            },
+            // time overrides
+            timeFrom: null,
+            timeShift: null,
+            // metric queries
+            targets: [{}]
+          };
 
           _.defaults(_this.panel, angular.copy(panelDefaults));
           _.defaults(_this.panel.legend, panelDefaults.legend);
