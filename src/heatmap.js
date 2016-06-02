@@ -129,9 +129,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
-        data = _.map(data, function (series) {
-          series.label = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
-          return series;
+        _.each(data, function (series) {
+          series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
         });
 
         if (panel.datasource !== currentDatasource) {
@@ -151,7 +150,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             }
 
             return {
-              label: series.label,
+              label: series.epochLabel,
               values: getHeatmapData(series.datapoints)
             };
           });
@@ -193,19 +192,19 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
             labelToModelIndexMap = {};
             _.each(data, function (series, i) {
-              labelToModelIndexMap[series.label] = i;
+              labelToModelIndexMap[series.epochLabel] = i;
             });
           }
         } else if (delta) {
           var indexedData = [];
           var dataLength = 0;
           _.each(data, function (series) {
-            if (_.isUndefined(labelToModelIndexMap[series.label])) {
+            if (_.isUndefined(labelToModelIndexMap[series.epochLabel])) {
               return;
             }
 
             var values = getHeatmapData(series.datapoints);
-            indexedData[labelToModelIndexMap[series.label]] = values;
+            indexedData[labelToModelIndexMap[series.epochLabel]] = values;
 
             if (dataLength < values.length) {
               dataLength = values.length;
