@@ -130,7 +130,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }
 
         data = _.map(data, function (series) {
-          series.label = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
+          series.label = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
           return series;
         });
 
