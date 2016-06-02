@@ -129,6 +129,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
+        data = _.map(data, function (series) {
+          series.label = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
+          return series;
+        });
+
         if (panel.datasource !== currentDatasource) {
           panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
           firstDraw = true;

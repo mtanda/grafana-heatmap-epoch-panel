@@ -143,6 +143,11 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 return;
               }
 
+              data = _.map(data, function (series) {
+                series.label = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
+                return series;
+              });
+
               if (panel.datasource !== currentDatasource) {
                 panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
                 firstDraw = true;
