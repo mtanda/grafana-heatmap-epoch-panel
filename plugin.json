@@ -3,6 +3,22 @@
   "name": "HeatmapEpoch",
   "id": "grafana-heatmap-epoch-panel",
 
+  "info": {
+    "description": "Heatmap Panel for Grafana",
+    "author": {
+      "name": "Mitsuhiro Tanda"
+    },
+    "keywords": ["heatmap", "panel"],
+    "links": [
+      {"name": "GitHub", "url": "https://github.com/mtanda/grafana-heatmap-panel"}
+    ],
+    "screenshots": [
+      {"name": "Heatmap", "path": "src/images/heatmap.png"}
+    ],
+    "version": "0.1.0",
+    "updated": "2016-04-14"
+  },
+
   "dependencies": {
     "grafanaVersion": "3.x.x",
     "plugins": [ ]
