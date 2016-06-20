@@ -10,7 +10,7 @@
     },
     "keywords": ["heatmap", "panel"],
     "links": [
-      {"name": "GitHub", "url": "https://github.com/mtanda/grafana-heatmap-panel"}
+      {"name": "GitHub", "url": "https://github.com/mtanda/grafana-heatmap-epoch-panel"}
     ],
     "screenshots": [
       {"name": "Heatmap", "path": "src/images/heatmap.png"}
