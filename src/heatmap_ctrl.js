@@ -67,7 +67,7 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
 
   onInitEditMode() {
     this.addEditorTab('Legend', 'public/app/plugins/panel/graph/tab_legend.html', 2);
-    this.addEditorTab('Heatmap Options', 'public/plugins/grafana-heatmap-epoch-panel/tab_options.html', 3);
+    this.addEditorTab('Heatmap Options', 'public/plugins/mtanda-heatmap-epoch-panel/tab_options.html', 3);
 
     this.unitFormats = kbn.getUnitFormats();
   }

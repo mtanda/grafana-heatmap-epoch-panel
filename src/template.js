@@ -1,5 +1,5 @@
 var template = `
-<link rel="stylesheet" href="/public/plugins/grafana-heatmap-epoch-panel/bower_components/epoch/dist/css/epoch.min.css">
+<link rel="stylesheet" href="/public/plugins/mtanda-heatmap-epoch-panel/bower_components/epoch/dist/css/epoch.min.css">
 <div class="graph-wrapper" ng-class="{'graph-legend-rightside': ctrl.panel.legend.rightSide}">
   <div class="graph-canvas-wrapper">
 
