@@ -164,7 +164,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
           key: 'onInitEditMode',
           value: function onInitEditMode() {
             this.addEditorTab('Legend', 'public/app/plugins/panel/graph/tab_legend.html', 2);
-            this.addEditorTab('Heatmap Options', 'public/plugins/grafana-heatmap-epoch-panel/tab_options.html', 3);
+            this.addEditorTab('Heatmap Options', 'public/plugins/mtanda-heatmap-epoch-panel/tab_options.html', 3);
 
             this.unitFormats = kbn.getUnitFormats();
           }
