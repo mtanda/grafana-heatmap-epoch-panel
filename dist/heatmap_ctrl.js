@@ -122,7 +122,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
               buckets: 10,
               bucketRange: [0, 100],
               ticks: {
-                time: 15, // TODO
+                time: 5, // TODO
                 left: 5,
                 right: 5
               }

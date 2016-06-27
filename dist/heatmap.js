@@ -125,6 +125,13 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 epoch.setData(data);
 
                 if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
+                  var ticks = Math.ceil(panel.heatmapOptions.windowSize / panel.heatmapOptions.ticks.time);
+                  var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
+                  var max = _.isUndefined(ctrl.range.to) ? null : ctrl.range.to.valueOf();
+                  epoch.option('tickFormats.bottom', function (d) {
+                    var timeFormat = time_format(ticks, min, max);
+                    return moment.unix(d).format(timeFormat);
+                  });
                   epoch.ticksChanged();
                 }
                 currentTimeRange = [ctrl.range.from, ctrl.range.to];
@@ -206,7 +213,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 currentSize.height = height;
 
                 if (panel.span !== currentSpan) {
-                  epoch.option('ticks.time', Math.floor(15 * 12 / panel.span));
+                  epoch.option('ticks.time', Math.ceil(5 * 12 / panel.span));
                   epoch.ticksChanged();
                 }
                 currentSpan = panel.span;
@@ -262,6 +269,31 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 }
                 ctrl.renderingCompleted();
               }
+            }
+
+            function time_format(ticks, min, max) {
+              if (min && max && ticks) {
+                var range = max - min;
+                var secPerTick = range / ticks / 1000;
+                var oneDay = 86400000;
+                var oneYear = 31536000000;
+
+                if (secPerTick <= 45) {
+                  return "HH:mm:ss";
+                }
+                if (secPerTick <= 7200 || range <= oneDay) {
+                  return "HH:mm";
+                }
+                if (secPerTick <= 80000) {
+                  return "M/D HH:mm";
+                }
+                if (secPerTick <= 2419200 || range <= oneYear) {
+                  return "M/D";
+                }
+                return "YYYY-M";
+              }
+
+              return "HH:mm";
             }
 
             function shouldDelayDraw(panel) {
