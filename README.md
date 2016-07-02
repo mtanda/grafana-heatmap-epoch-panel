@@ -41,7 +41,3 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
 - This plugin doesn't support some of Graph panel feature.
   - Because Epoch library doesn't support some of Flot library feature (Graph panel use Flot)
   - Doesn't support Time range selection by clicking panel, Tooltip, Annotation, Draw threshold lines, etc...
-
-- The y/x axis character color is very dark...
-  - The color is defined by CSS of Epoch library.
-  - I need to change the color.
