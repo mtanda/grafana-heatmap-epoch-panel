@@ -2,6 +2,7 @@
 
 ### Bug fixes
 - fix axis colors
+- make time axis more intuitive
 
 ### Documentation
 - update README
