@@ -1,22 +1,43 @@
-## Clone into plugins directory
-Either clone this repo into your grafana plugins directory (default /var/lib/grafana/plugins if your installing grafana with package).
-Restart grafana-server and the plugin should be automatically detected and used.
+## Heatmap (Epoch) Panel Plugin for Grafana
 
-```
-git clone git@github.com:mtanda/grafana-heatmap-epoch-panel.git
-sudo service grafana-server restart
-```
+**Caution: This plugin is NOT stable yet, if you find some bugs, please report me :-)**
 
+This plugin show the Heatmap of time series data.
 
-## Clone into a directory of your choice
+![](https://raw.githubusercontent.com/mtanda/grafana-heatmap-epoch-panel/master/dist/images/heatmap.png)
 
-The edit your grafana.ini config file (Default location is at /etc/grafana/grafana.ini) and add this:
+### How this plugin works
 
-```ini
-[plugin.grafana-heatmap-epoch-panel]
-path = /home/your/clone/dir/grafana-heatmap-epoch-panel
-```
+This plugin receives raw time series data, and convert the data to heatmap data in plugin side, and then show it by [Epoch](http://epochjs.github.io/epoch/).
 
-Note that if you clone it into the grafana plugins directory you do not need to add the above config option. That is only
-if you want to place the plugin in a directory outside the standard plugins directory. Be aware that grafana-server
-needs read access to the directory.
+To make heatmap data, make histogram data in fixed short time range. The aggregation time range is calculated from Epoch window size options, please calibrate the option to fit your needs.
+
+### Supported Datasources
+
+I confirmed this plugin work with following datasource.
+
+- Prometheus
+
+But, this plugin can handle time series data (defined by Grafana plugin interface).
+
+Should work with Graphite / InfluxDB / OpenTSDB.
+
+### Options
+
+Support some of Epoch options.
+
+- Window Size
+- Buckets
+- BucketLower and BuckerUpper (correspond to bucketRange)
+
+Please read [official document](http://epochjs.github.io/epoch/real-time/#heatmap), to get to know actual meaning of these options.
+
+### Known Issues
+
+- This plugin doesn't support Elasticsearch aggregation.
+  - As noted above, this plugin aggregate the time series data by plugin itself.
+  - Can't handle the Elasticsearch aggregation result yet.
+
+- This plugin doesn't support some of Graph panel feature.
+  - Because Epoch library doesn't support some of Flot library feature (Graph panel use Flot)
+  - Doesn't support Time range selection by clicking panel, Tooltip, Annotation, Draw threshold lines, etc...
