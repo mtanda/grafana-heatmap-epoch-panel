@@ -103,14 +103,16 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
             }
 
             function getHeatmapData(datapoints) {
-              var windowInterval = (ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize;
+              var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
               return _.chain(datapoints).reject(function (dp) {
                 return dp[0] === null;
               }).groupBy(function (dp) {
-                return Math.ceil(dp[1] / windowInterval);
+                return Math.ceil((dp[1] - ctrl.range.from) / windowInterval);
+              }).filter(function (value, timeKey) {
+                return timeKey < panel.heatmapOptions.windowSize;
               }).map(function (values, timeKey) {
                 return {
-                  time: Math.ceil(timeKey * windowInterval / 1000),
+                  time: Math.floor((timeKey * windowInterval + ctrl.range.from) / 1000),
                   histogram: _.countBy(values, function (value) {
                     return value[0];
                   })
