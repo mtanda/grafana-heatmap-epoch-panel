@@ -1,5 +1,6 @@
 var template = `
 <link rel="stylesheet" href="/public/plugins/mtanda-heatmap-epoch-panel/bower_components/epoch/dist/css/epoch.min.css">
+<link rel="stylesheet" href="/public/plugins/mtanda-heatmap-epoch-panel/epoch_override.css">
 <div class="graph-wrapper" ng-class="{'graph-legend-rightside': ctrl.panel.legend.rightSide}">
   <div class="graph-canvas-wrapper">
 
@@ -13,7 +14,7 @@ var template = `
       </span>
     </div>
 
-    <div grafana-heatmap-epoch class="epoch-theme-dark epoch category20" style="z-index: 0;" ng-dblclick="ctrl.zoomOut()">
+    <div grafana-heatmap-epoch class="epoch-theme-dark epoch category20 heatmap-epoch-colors" style="z-index: 0;" ng-dblclick="ctrl.zoomOut()">
     </div>
 
   </div>
