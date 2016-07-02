@@ -1,3 +1,12 @@
+# 0.1.2 (unreleased)
+
+### Bug fixes
+- fix axis colors
+
+### Documentation
+- update README
+- add CHANGELOG
+
 # 0.1.1 (2016-06-28)
 
 ### Bug fixes
