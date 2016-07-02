@@ -91,11 +91,11 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return dp[0] === null;
         })
         .groupBy(function(dp) {
-          return Math.floor(dp[1] / windowInterval);
+          return Math.ceil(dp[1] / windowInterval);
         })
         .map(function(values, timeKey) {
           return {
-            time: Math.floor(timeKey * windowInterval / 1000),
+            time: Math.ceil(timeKey * windowInterval / 1000),
             histogram: _.countBy(values, function(value) {
               return value[0];
             })
