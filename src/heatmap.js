@@ -225,6 +225,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             callPlot(true, seriesData);
           }
 
+          // create model index for realtime graph
           if (delta) {
             firstDraw = false;
 
@@ -233,7 +234,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               labelToModelIndexMap[series.epochLabel] = i;
             });
           }
-        } else if (delta) {
+        } else if (delta) { // realtime graph
           var indexedData = [];
           var dataLength = 0;
           _.each(data, function (series) {
