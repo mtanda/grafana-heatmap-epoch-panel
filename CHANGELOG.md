@@ -1,5 +1,8 @@
 # 0.1.2 (unreleased)
 
+### Enhancements
+- support theme
+
 ### Bug fixes
 - fix axis colors
 - make time axis more intuitive
