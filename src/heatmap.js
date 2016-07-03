@@ -185,6 +185,21 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
         var epoch = getEpoch();
 
+        // check panel size change
+        var width = elem.parent().width();
+        var height = elem.parent().height();
+        if (width !== currentSize.width) {
+          epoch.option('width', width);
+          var ticksTime = (width > 700) ? 5 : 10;
+          epoch.option('ticks.time', ticksTime);
+          epoch.ticksChanged();
+        }
+        if (height !== currentSize.height) {
+          epoch.option('height', height - getLegendHeight(height));
+        }
+        currentSize.width = width;
+        currentSize.height = height;
+
         if (firstDraw) {
           delta = true;
           var seriesData = _.map(data, function (series, i) {
@@ -200,20 +215,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               values: getHeatmapData(series.datapoints)
             };
           });
-
-          var width = elem.parent().width();
-          var height = elem.parent().height();
-          if (width !== currentSize.width) {
-            epoch.option('width', width);
-            var ticksTime = (width > 700) ? 5 : 10;
-            epoch.option('ticks.time', ticksTime);
-            epoch.ticksChanged();
-          }
-          if (height !== currentSize.height) {
-            epoch.option('height', height - getLegendHeight(height));
-          }
-          currentSize.width = width;
-          currentSize.height = height;
 
           if (shouldDelayDraw(panel)) {
             // temp fix for legends on the side, need to render twice to get dimensions right
