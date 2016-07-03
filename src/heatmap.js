@@ -26,7 +26,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var currentDatasource = '';
       var currentTimeRange = [0, 0];
       var currentSize = { width: null, height: null };
-      var currentSpan = null;
 
       // Receive render events
       ctrl.events.on('render', function(renderData) {
@@ -199,19 +198,15 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           var height = elem.parent().height();
           if (width !== currentSize.width) {
             epoch.option('width', width);
+            var ticksTime = (width > 700) ? 5 : 10;
+            epoch.option('ticks.time', ticksTime);
+            epoch.ticksChanged();
           }
           if (height !== currentSize.height) {
             epoch.option('height', height - getLegendHeight(height));
           }
           currentSize.width = width;
           currentSize.height = height;
-
-          if (panel.span !== currentSpan) {
-            var ticksTime = (width > 700) ? 5 : 10;
-            epoch.option('ticks.time', Math.ceil(ticksTime * 12 / panel.span));
-            epoch.ticksChanged();
-          }
-          currentSpan = panel.span;
 
           if (shouldDelayDraw(panel)) {
             // temp fix for legends on the side, need to render twice to get dimensions right
