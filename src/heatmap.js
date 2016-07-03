@@ -84,6 +84,34 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (right.show && right.label) { gridMargin.right = 20; }
       }
 
+      function getEpoch() {
+        if (epoch) {
+          return epoch;
+        }
+
+        epoch = elem.epoch(panel.heatmapOptions);
+        scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
+          epoch.option('windowSize', newVal);
+          epoch.option('historySize', newVal * 3);
+          epoch.redraw();
+        });
+        scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
+          epoch.option('buckets', newVal);
+        });
+        scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function(newVal, oldVal) {
+          epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+        });
+        scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function(newVal, oldVal) {
+          epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+        });
+        scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
+          epoch.option('startTime', newVal);
+          epoch.redraw();
+        });
+
+        return epoch;
+      }
+
       function getHeatmapData(datapoints) {
         var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
         var data = _.chain(datapoints)
@@ -173,27 +201,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
 
           panel.heatmapOptions.data = seriesData;
-          if (!epoch) {
-            epoch = elem.epoch(panel.heatmapOptions);
-            scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
-              epoch.option('windowSize', newVal);
-              epoch.option('historySize', newVal * 3);
-              epoch.redraw();
-            });
-            scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
-              epoch.option('buckets', newVal);
-            });
-            scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function(newVal, oldVal) {
-              epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
-            });
-            scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function(newVal, oldVal) {
-              epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
-            });
-            scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
-              epoch.option('startTime', newVal);
-              epoch.redraw();
-            });
-          }
+          var epoch = getEpoch();
 
           var width = elem.parent().width();
           var height = elem.parent().height();
