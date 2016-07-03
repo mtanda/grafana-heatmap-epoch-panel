@@ -106,12 +106,10 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
 
             function getHeatmapData(datapoints) {
               var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
-              return _.chain(datapoints).reject(function (dp) {
+              var data = _.chain(datapoints).reject(function (dp) {
                 return dp[0] === null;
               }).groupBy(function (dp) {
                 return Math.floor((dp[1] - ctrl.range.from) / windowInterval) + 1;
-              }).filter(function (value, timeKey) {
-                return timeKey < panel.heatmapOptions.windowSize;
               }).map(function (values, timeKey) {
                 return {
                   time: Math.floor((timeKey * windowInterval + ctrl.range.from) / 1000),
@@ -122,6 +120,12 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
               }).sortBy(function (dp) {
                 return dp.time;
               }).value();
+
+              if (data.length > panel.heatmapOptions.windowSize) {
+                data[panel.heatmapOptions.windowSize].histogram = {};
+              }
+
+              return data;
             }
 
             function callPlot(incrementRenderCounter, data) {

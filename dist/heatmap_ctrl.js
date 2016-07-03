@@ -117,7 +117,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
               opacity: function opacity(value, max) {
                 return Math.pow(value / max, 0.7);
               },
-              windowSize: 40,
+              windowSize: 60,
               historySize: 120,
               buckets: 10,
               bucketRange: [0, 100],
