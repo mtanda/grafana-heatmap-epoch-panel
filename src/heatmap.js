@@ -91,7 +91,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return dp[0] === null;
         })
         .groupBy(function(dp) {
-          return Math.ceil((dp[1] - ctrl.range.from) / windowInterval);
+          return Math.floor((dp[1] - ctrl.range.from) / windowInterval) + 1;
         })
         .filter(function(value, timeKey) {
           return timeKey < panel.heatmapOptions.windowSize;
