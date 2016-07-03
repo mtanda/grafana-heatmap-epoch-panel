@@ -207,7 +207,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           currentSize.height = height;
 
           if (panel.span !== currentSpan) {
-            epoch.option('ticks.time', Math.ceil(5 * 12 / panel.span));
+            var ticksTime = (width > 700) ? 5 : 10;
+            epoch.option('ticks.time', Math.ceil(ticksTime * 12 / panel.span));
             epoch.ticksChanged();
           }
           currentSpan = panel.span;
