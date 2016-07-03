@@ -257,7 +257,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
                 return d[n] || {
                   time: now,
                   histogram: {
-                    0: 0
                   }
                 };
               });
