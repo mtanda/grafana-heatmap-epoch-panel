@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.min.js'], function (_export, _context) {
-  var angular, $, moment, _, kbn;
+System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.min.js'], function (_export, _context) {
+  var angular, $, moment, _, config, kbn;
 
   return {
     setters: [function (_angular) {
@@ -12,6 +12,8 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
       moment = _moment.default;
     }, function (_lodash) {
       _ = _lodash.default;
+    }, function (_appCoreConfig) {
+      config = _appCoreConfig.default;
     }, function (_appCoreUtilsKbn) {
       kbn = _appCoreUtilsKbn.default;
     }, function (_bower_componentsD3D3MinJs) {}, function (_bower_componentsEpochDistJsEpochMinJs) {}],
@@ -107,7 +109,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               return _.chain(datapoints).reject(function (dp) {
                 return dp[0] === null;
               }).groupBy(function (dp) {
-                return Math.ceil((dp[1] - ctrl.range.from) / windowInterval);
+                return Math.floor((dp[1] - ctrl.range.from) / windowInterval) + 1;
               }).filter(function (value, timeKey) {
                 return timeKey < panel.heatmapOptions.windowSize;
               }).map(function (values, timeKey) {
@@ -153,6 +155,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               if (shouldAbortRender()) {
                 return;
               }
+              ctrl.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
               _.each(data, function (series) {
                 series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
