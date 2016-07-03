@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.min.js'], function (_export, _context) {
-  var angular, $, moment, _, config, kbn;
+System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', './bower_components/d3/d3.min.js', './bower_components/epoch/dist/js/epoch.min.js'], function (_export, _context) {
+  var angular, $, moment, _, kbn;
 
   return {
     setters: [function (_angular) {
@@ -12,8 +12,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
       moment = _moment.default;
     }, function (_lodash) {
       _ = _lodash.default;
-    }, function (_appCoreConfig) {
-      config = _appCoreConfig.default;
     }, function (_appCoreUtilsKbn) {
       kbn = _appCoreUtilsKbn.default;
     }, function (_bower_componentsD3D3MinJs) {}, function (_bower_componentsEpochDistJsEpochMinJs) {}],
@@ -38,7 +36,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
             var currentDatasource = '';
             var currentTimeRange = [0, 0];
             var currentSize = { width: null, height: null };
-            var currentSpan = null;
 
             // Receive render events
             ctrl.events.on('render', function (renderData) {
@@ -104,6 +101,34 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
               }
             }
 
+            function getEpoch() {
+              if (epoch) {
+                return epoch;
+              }
+
+              epoch = elem.epoch(panel.heatmapOptions);
+              scope.$watch('ctrl.panel.heatmapOptions.windowSize', function (newVal, oldVal) {
+                epoch.option('windowSize', newVal);
+                epoch.option('historySize', newVal * 3);
+                epoch.redraw();
+              });
+              scope.$watch('ctrl.panel.heatmapOptions.buckets', function (newVal, oldVal) {
+                epoch.option('buckets', newVal);
+              });
+              scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function (newVal, oldVal) {
+                epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+              });
+              scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function (newVal, oldVal) {
+                epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+              });
+              scope.$watch('ctrl.panel.heatmapOptions.startTime', function (newVal, oldVal) {
+                epoch.option('startTime', newVal);
+                epoch.redraw();
+              });
+
+              return epoch;
+            }
+
             function getHeatmapData(datapoints) {
               var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
               var data = _.chain(datapoints).reject(function (dp) {
@@ -159,17 +184,35 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
               if (shouldAbortRender()) {
                 return;
               }
-              ctrl.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
-              _.each(data, function (series) {
-                series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
-              });
-
+              // reset startTime if datasource is changed
               if (panel.datasource !== currentDatasource) {
                 panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
                 firstDraw = true;
               }
               currentDatasource = panel.datasource;
+
+              // replace the characters which is not allowed to use for label
+              _.each(data, function (series) {
+                series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
+              });
+
+              var epoch = getEpoch();
+
+              // check panel size change
+              var width = elem.parent().width();
+              var height = elem.parent().height();
+              if (width !== currentSize.width) {
+                epoch.option('width', width);
+                var ticksTime = width > 700 ? 5 : 10;
+                epoch.option('ticks.time', ticksTime);
+                epoch.ticksChanged();
+              }
+              if (height !== currentSize.height) {
+                epoch.option('height', height - getLegendHeight(height));
+              }
+              currentSize.width = width;
+              currentSize.height = height;
 
               if (firstDraw) {
                 delta = true;
@@ -187,46 +230,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
                   };
                 });
 
-                panel.heatmapOptions.data = seriesData;
-                if (!epoch) {
-                  epoch = elem.epoch(panel.heatmapOptions);
-                  scope.$watch('ctrl.panel.heatmapOptions.windowSize', function (newVal, oldVal) {
-                    epoch.option('windowSize', newVal);
-                    epoch.option('historySize', newVal * 3);
-                    epoch.redraw();
-                  });
-                  scope.$watch('ctrl.panel.heatmapOptions.buckets', function (newVal, oldVal) {
-                    epoch.option('buckets', newVal);
-                  });
-                  scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function (newVal, oldVal) {
-                    epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
-                  });
-                  scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function (newVal, oldVal) {
-                    epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
-                  });
-                  scope.$watch('ctrl.panel.heatmapOptions.startTime', function (newVal, oldVal) {
-                    epoch.option('startTime', newVal);
-                    epoch.redraw();
-                  });
-                }
-
-                var width = elem.parent().width();
-                var height = elem.parent().height();
-                if (width !== currentSize.width) {
-                  epoch.option('width', width);
-                }
-                if (height !== currentSize.height) {
-                  epoch.option('height', height - getLegendHeight(height));
-                }
-                currentSize.width = width;
-                currentSize.height = height;
-
-                if (panel.span !== currentSpan) {
-                  epoch.option('ticks.time', Math.ceil(5 * 12 / panel.span));
-                  epoch.ticksChanged();
-                }
-                currentSpan = panel.span;
-
                 if (shouldDelayDraw(panel)) {
                   // temp fix for legends on the side, need to render twice to get dimensions right
                   callPlot(false, seriesData);
@@ -238,6 +241,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
                   callPlot(true, seriesData);
                 }
 
+                // create model index for realtime graph
                 if (delta) {
                   firstDraw = false;
 
@@ -247,6 +251,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
                   });
                 }
               } else if (delta) {
+                // realtime graph
                 var indexedData = [];
                 var dataLength = 0;
                 _.each(data, function (series) {
@@ -268,9 +273,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/config', 'ap
                     var pushData = indexedData.map(function (d) {
                       return d[n] || {
                         time: now,
-                        histogram: {
-                          0: 0
-                        }
+                        histogram: {}
                       };
                     });
                     epoch.push(pushData);

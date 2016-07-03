@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodash', 'app/core/time_series2', 'app/core/utils/file_export', 'app/plugins/sdk'], function (_export, _context) {
-  var template, angular, moment, kbn, _, TimeSeries, fileExport, MetricsPanelCtrl, _createClass, _get, HeatmapEpochCtrl;
+System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodash', 'app/core/config', 'app/core/time_series2', 'app/core/utils/file_export', 'app/plugins/sdk'], function (_export, _context) {
+  var template, angular, moment, kbn, _, config, TimeSeries, fileExport, MetricsPanelCtrl, _createClass, _get, HeatmapEpochCtrl;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -44,6 +44,8 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
       kbn = _appCoreUtilsKbn.default;
     }, function (_lodash) {
       _ = _lodash.default;
+    }, function (_appCoreConfig) {
+      config = _appCoreConfig.default;
     }, function (_appCoreTime_series) {
       TimeSeries = _appCoreTime_series.default;
     }, function (_appCoreUtilsFile_export) {
@@ -122,7 +124,6 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
               buckets: 10,
               bucketRange: [0, 100],
               ticks: {
-                time: 5, // TODO
                 left: 5,
                 right: 5
               }
@@ -150,6 +151,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
           _this.hiddenSeries = {};
           _this.seriesList = [];
           _this.colors = $scope.$root.colors;
+          _this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
           _this.events.on('render', _this.onRender.bind(_this));
           _this.events.on('data-received', _this.onDataReceived.bind(_this));
