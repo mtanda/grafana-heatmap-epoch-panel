@@ -2,6 +2,7 @@ import angular from 'angular';
 import $ from 'jquery';
 import moment from 'moment';
 import _ from 'lodash';
+import config from 'app/core/config';
 import kbn from 'app/core/utils/kbn';
 import './bower_components/d3/d3.min.js';
 import './bower_components/epoch/dist/js/epoch.min.js';
@@ -140,6 +141,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (shouldAbortRender()) {
           return;
         }
+        ctrl.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
         _.each(data, function (series) {
           series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
