@@ -143,6 +143,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (shouldAbortRender()) {
           return;
         }
+
         ctrl.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
         _.each(data, function (series) {
