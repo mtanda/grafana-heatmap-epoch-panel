@@ -87,15 +87,12 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
       function getHeatmapData(datapoints) {
         var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
-        return _.chain(datapoints)
+        var data = _.chain(datapoints)
         .reject(function(dp) {
           return dp[0] === null;
         })
         .groupBy(function(dp) {
           return Math.floor((dp[1] - ctrl.range.from) / windowInterval) + 1;
-        })
-        .filter(function(value, timeKey) {
-          return timeKey < panel.heatmapOptions.windowSize;
         })
         .map(function(values, timeKey) {
           return {
@@ -108,6 +105,12 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         .sortBy(function(dp) {
           return dp.time;
         }).value();
+
+        if (data.length > panel.heatmapOptions.windowSize) {
+          data[panel.heatmapOptions.windowSize].histogram = {};
+        }
+
+        return data;
       }
 
       function callPlot(incrementRenderCounter, data) {
