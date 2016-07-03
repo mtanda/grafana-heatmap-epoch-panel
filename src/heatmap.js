@@ -183,6 +183,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
         });
 
+        var epoch = getEpoch();
+
         if (firstDraw) {
           delta = true;
           var seriesData = _.map(data, function (series, i) {
@@ -198,9 +200,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               values: getHeatmapData(series.datapoints)
             };
           });
-
-          panel.heatmapOptions.data = seriesData;
-          var epoch = getEpoch();
 
           var width = elem.parent().width();
           var height = elem.parent().height();
