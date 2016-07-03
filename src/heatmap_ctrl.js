@@ -3,6 +3,7 @@ import angular from 'angular';
 import moment from 'moment';
 import kbn from 'app/core/utils/kbn';
 import _ from 'lodash';
+import config from 'app/core/config';
 import TimeSeries from 'app/core/time_series2';
 import * as fileExport from 'app/core/utils/file_export';
 import {MetricsPanelCtrl} from 'app/plugins/sdk';
@@ -55,6 +56,7 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.hiddenSeries = {};
     this.seriesList = [];
     this.colors = $scope.$root.colors;
+    this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
     this.events.on('render', this.onRender.bind(this));
     this.events.on('data-received', this.onDataReceived.bind(this));
