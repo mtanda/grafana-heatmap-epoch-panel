@@ -171,15 +171,17 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return;
         }
 
-        _.each(data, function (series) {
-          series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
-        });
-
+        // reset startTime if datasource is changed
         if (panel.datasource !== currentDatasource) {
           panel.heatmapOptions.startTime = Math.floor(ctrl.range.from.valueOf() / 1000);
           firstDraw = true;
         }
         currentDatasource = panel.datasource;
+
+        // replace the characters which is not allowed to use for label
+        _.each(data, function (series) {
+          series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
+        });
 
         if (firstDraw) {
           delta = true;
