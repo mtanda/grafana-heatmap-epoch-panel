@@ -41,3 +41,16 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
 - This plugin doesn't support some of Graph panel feature.
   - Because Epoch library doesn't support some of Flot library feature (Graph panel use Flot)
   - Doesn't support Time range selection by clicking panel, Tooltip, Annotation, Draw threshold lines, etc...
+
+------
+
+#### Changelog
+
+##### v0.1.2
+- Added support theme
+- Fixed axis character colors
+- Fixed time axis, make it more intuitive
+
+##### v0.1.1
+- Fixed container resize handling, redraw graph to fit container size
+- Fixed ticks, show ticks like graph panel

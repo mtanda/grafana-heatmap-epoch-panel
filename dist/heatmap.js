@@ -204,7 +204,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               var height = elem.parent().height();
               if (width !== currentSize.width) {
                 epoch.option('width', width);
-                var ticksTime = width > 700 ? 5 : 10;
+                var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
                 epoch.option('ticks.time', ticksTime);
                 epoch.ticksChanged();
               }
@@ -216,7 +216,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
 
               if (firstDraw) {
                 delta = true;
-                var seriesData = _.map(data, function (series, i) {
+                var seriesData = _.map(data, function (series) {
                   delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
 
                   // if hidden remove points
@@ -291,21 +291,21 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 var oneYear = 31536000000;
 
                 if (secPerTick <= 45) {
-                  return "HH:mm:ss";
+                  return 'HH:mm:ss';
                 }
                 if (secPerTick <= 7200 || range <= oneDay) {
-                  return "HH:mm";
+                  return 'HH:mm';
                 }
                 if (secPerTick <= 80000) {
-                  return "M/D HH:mm";
+                  return 'M/D HH:mm';
                 }
                 if (secPerTick <= 2419200 || range <= oneYear) {
-                  return "M/D";
+                  return 'M/D';
                 }
-                return "YYYY-M";
+                return 'YYYY-M';
               }
 
-              return "HH:mm";
+              return 'HH:mm';
             }
 
             function shouldDelayDraw(panel) {
@@ -317,7 +317,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               }
             }
 
-            elem.bind("plotselected", function (event, ranges) {
+            elem.bind('plotselected', function (event, ranges) {
               scope.$apply(function () {
                 timeSrv.setTime({
                   from: moment.utc(ranges.xaxis.from),
