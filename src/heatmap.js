@@ -202,7 +202,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
         if (firstDraw) {
           delta = true;
-          var seriesData = _.map(data, function (series, i) {
+          var seriesData = _.map(data, function (series) {
             delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
 
             // if hidden remove points
@@ -275,21 +275,21 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           var oneYear = 31536000000;
 
           if (secPerTick <= 45) {
-            return "HH:mm:ss";
+            return 'HH:mm:ss';
           }
           if (secPerTick <= 7200 || range <= oneDay) {
-            return "HH:mm";
+            return 'HH:mm';
           }
           if (secPerTick <= 80000) {
-            return "M/D HH:mm";
+            return 'M/D HH:mm';
           }
           if (secPerTick <= 2419200 || range <= oneYear) {
-            return "M/D";
+            return 'M/D';
           }
-          return "YYYY-M";
+          return 'YYYY-M';
         }
 
-        return "HH:mm";
+        return 'HH:mm';
       }
 
       function shouldDelayDraw(panel) {
@@ -301,7 +301,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }
       }
 
-      elem.bind("plotselected", function (event, ranges) {
+      elem.bind('plotselected', function (event, ranges) {
         scope.$apply(function() {
           timeSrv.setTime({
             from  : moment.utc(ranges.xaxis.from),
