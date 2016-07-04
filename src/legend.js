@@ -4,7 +4,7 @@ import angular from 'angular';
 import _ from 'lodash';
 import $ from 'jquery';
 
-angular.module('grafana.directives').directive('graphLegend', function(popoverSrv, $timeout) {
+angular.module('grafana.directives').directive('heatmapEpochLegend', function(popoverSrv, $timeout) {
 
   return {
     link: function(scope, elem) {
