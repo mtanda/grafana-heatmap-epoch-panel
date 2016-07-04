@@ -190,7 +190,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         var height = elem.parent().height();
         if (width !== currentSize.width) {
           epoch.option('width', width);
-          var ticksTime = (width > 700) ? 5 : 10;
+          var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
           epoch.option('ticks.time', ticksTime);
           epoch.ticksChanged();
         }
