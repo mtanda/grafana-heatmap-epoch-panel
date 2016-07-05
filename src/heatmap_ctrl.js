@@ -84,6 +84,10 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.render();
   }
 
+  getEpochLabel(label) {
+    return label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
+  }
+
   issueQueries(datasource) {
     if (!this.panel.targets || this.panel.targets.length === 0) {
       return this.$q.when([]);

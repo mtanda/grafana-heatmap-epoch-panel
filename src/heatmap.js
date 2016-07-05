@@ -178,11 +178,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         }
         currentDatasource = panel.datasource;
 
-        // replace the characters which is not allowed to use for label
-        _.each(data, function (series) {
-          series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
-        });
-
         var epoch = getEpoch();
 
         // check panel size change
@@ -204,17 +199,18 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           delta = true;
           var seriesData = _.map(data, function (series) {
             delta = delta && series.unit; // use unit as delta temporaly, if all series is delta, enable realtime chart
+            var epochLabel = ctrl.getEpochLabel(series.label);
 
             // if hidden remove points
             if (ctrl.hiddenSeries[series.alias]) {
               return {
-                label: series.epochLabel,
+                label: epochLabel,
                 values: []
               };
             }
 
             return {
-              label: series.epochLabel,
+              label: epochLabel,
               values: getHeatmapData(series.datapoints)
             };
           });
@@ -234,19 +230,19 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
             labelToModelIndexMap = {};
             _.each(data, function (series, i) {
-              labelToModelIndexMap[series.epochLabel] = i;
+              labelToModelIndexMap[series.label] = i;
             });
           }
         } else if (delta) { // realtime graph
           var indexedData = [];
           var dataLength = 0;
           _.each(data, function (series) {
-            if (_.isUndefined(labelToModelIndexMap[series.epochLabel])) {
+            if (_.isUndefined(labelToModelIndexMap[series.label])) {
               return;
             }
 
             var values = getHeatmapData(series.datapoints);
-            indexedData[labelToModelIndexMap[series.epochLabel]] = values;
+            indexedData[labelToModelIndexMap[series.label]] = values;
 
             if (dataLength < values.length) {
               dataLength = values.length;
