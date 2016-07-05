@@ -207,7 +207,10 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
 
             // if hidden remove points
             if (ctrl.hiddenSeries[series.alias]) {
-              return {};
+              return {
+                label: series.epochLabel,
+                values: []
+              };
             }
 
             return {
