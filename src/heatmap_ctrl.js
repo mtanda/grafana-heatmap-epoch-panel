@@ -130,8 +130,8 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     var series = new TimeSeries({
       datapoints: datapoints,
       alias: alias,
-      color: seriesData.delta || false, // TODO: fix, use color as delta temporaly
-      unit: seriesData.unit,
+      color: color,
+      unit: seriesData.delta || false // TODO: fix, use unit as delta temporaly
     });
 
     if (datapoints && datapoints.length > 0) {

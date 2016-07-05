@@ -203,7 +203,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         if (firstDraw) {
           delta = true;
           var seriesData = _.map(data, function (series) {
-            delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
+            delta = delta && series.unit; // use unit as delta temporaly, if all series is delta, enable realtime chart
 
             // if hidden remove points
             if (ctrl.hiddenSeries[series.alias]) {
