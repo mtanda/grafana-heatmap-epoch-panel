@@ -124,6 +124,10 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.datapointsWarning = false;
     this.datapointsCount = 0;
     this.datapointsOutside = false;
+    var maxTimeSeries = 5;
+    if (dataList.length > maxTimeSeries) {
+      dataList = dataList.slice(0, maxTimeSeries); // TODO: support only 5 time series
+    }
     this.seriesList = dataList.map(this.seriesHandler.bind(this));
     this.datapointsWarning = this.datapointsCount === 0 || this.datapointsOutside;
 
