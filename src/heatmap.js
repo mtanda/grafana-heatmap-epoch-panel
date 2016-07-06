@@ -143,6 +143,13 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         try {
           epoch.setData(data);
 
+          _.each(data, function(d) {
+            epoch.showLayer(d.label);
+            if (ctrl.hiddenSeries[d.alias]) {
+              epoch.hideLayer(d.label);
+            }
+          });
+
           if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
             var ticks = Math.ceil(panel.heatmapOptions.windowSize / panel.heatmapOptions.ticks.time);
             var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
@@ -201,15 +208,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             delta = delta && series.unit; // use unit as delta temporaly, if all series is delta, enable realtime chart
             var epochLabel = ctrl.getEpochLabel(series.label);
 
-            // if hidden remove points
-            if (ctrl.hiddenSeries[series.alias]) {
-              return {
-                label: epochLabel,
-                values: []
-              };
-            }
-
             return {
+              alias: series.label,
               label: epochLabel,
               values: getHeatmapData(series.datapoints)
             };
