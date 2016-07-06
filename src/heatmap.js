@@ -56,6 +56,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         try {
           var height = ctrl.height - getLegendHeight(ctrl.height);
           elem.css('height', height + 'px');
+          currentSize.height = height;
 
           return true;
         } catch(e) { // IE throws errors sometimes
