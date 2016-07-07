@@ -46,6 +46,9 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
 
 #### Changelog
 
+##### v0.1.3
+- Added support legend
+
 ##### v0.1.2
 - Added support theme
 - Fixed axis character colors

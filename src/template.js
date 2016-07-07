@@ -17,7 +17,7 @@ var template = `
 
   </div>
 
-  <div class="graph-legend-wrapper" graph-legend></div>
+  <div class="graph-legend-wrapper" heatmap-epoch-legend></div>
   </div>
 
 <div class="clearfix"></div>

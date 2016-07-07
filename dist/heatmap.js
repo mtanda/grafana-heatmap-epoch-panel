@@ -67,6 +67,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               try {
                 var height = ctrl.height - getLegendHeight(ctrl.height);
                 elem.css('height', height + 'px');
+                currentSize.height = height;
 
                 return true;
               } catch (e) {
@@ -157,6 +158,13 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               try {
                 epoch.setData(data);
 
+                _.each(data, function (d) {
+                  epoch.showLayer(d.label);
+                  if (ctrl.hiddenSeries[d.alias]) {
+                    epoch.hideLayer(d.label);
+                  }
+                });
+
                 if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
                   var ticks = Math.ceil(panel.heatmapOptions.windowSize / panel.heatmapOptions.ticks.time);
                   var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
@@ -192,11 +200,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               }
               currentDatasource = panel.datasource;
 
-              // replace the characters which is not allowed to use for label
-              _.each(data, function (series) {
-                series.epochLabel = series.label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
-              });
-
               var epoch = getEpoch();
 
               // check panel size change
@@ -217,15 +220,12 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               if (firstDraw) {
                 delta = true;
                 var seriesData = _.map(data, function (series) {
-                  delta = delta && series.color; // use color as delta temporaly, if all series is delta, enable realtime chart
-
-                  // if hidden remove points
-                  if (ctrl.hiddenSeries[series.alias]) {
-                    return {};
-                  }
+                  delta = delta && series.unit; // use unit as delta temporaly, if all series is delta, enable realtime chart
+                  var epochLabel = ctrl.getEpochLabel(series.label);
 
                   return {
-                    label: series.epochLabel,
+                    alias: series.label,
+                    label: epochLabel,
                     values: getHeatmapData(series.datapoints)
                   };
                 });
@@ -247,7 +247,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
 
                   labelToModelIndexMap = {};
                   _.each(data, function (series, i) {
-                    labelToModelIndexMap[series.epochLabel] = i;
+                    labelToModelIndexMap[series.label] = i;
                   });
                 }
               } else if (delta) {
@@ -255,12 +255,12 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 var indexedData = [];
                 var dataLength = 0;
                 _.each(data, function (series) {
-                  if (_.isUndefined(labelToModelIndexMap[series.epochLabel])) {
+                  if (_.isUndefined(labelToModelIndexMap[series.label])) {
                     return;
                   }
 
                   var values = getHeatmapData(series.datapoints);
-                  indexedData[labelToModelIndexMap[series.epochLabel]] = values;
+                  indexedData[labelToModelIndexMap[series.label]] = values;
 
                   if (dataLength < values.length) {
                     dataLength = values.length;

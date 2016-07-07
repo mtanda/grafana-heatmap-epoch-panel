@@ -150,7 +150,8 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
 
           _this.hiddenSeries = {};
           _this.seriesList = [];
-          _this.colors = $scope.$root.colors;
+          _this.colors = [// TODO: fix hardcoding color
+          '#1f77b4', '#2ca02c', '#d62728', '#8c564b', '#7f7f7f'];
           _this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
           _this.events.on('render', _this.onRender.bind(_this));
@@ -182,6 +183,11 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
           value: function setUnitFormat(axis, subItem) {
             axis.format = subItem.value;
             this.render();
+          }
+        }, {
+          key: 'getEpochLabel',
+          value: function getEpochLabel(label) {
+            return label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
           }
         }, {
           key: 'issueQueries',
@@ -219,6 +225,11 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
             this.datapointsWarning = false;
             this.datapointsCount = 0;
             this.datapointsOutside = false;
+            var maxTimeSeries = 5;
+            if (dataList.length > maxTimeSeries) {
+              console.log('heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)');
+              dataList = dataList.slice(0, maxTimeSeries); // TODO: support only 5 time series
+            }
             this.seriesList = dataList.map(this.seriesHandler.bind(this));
             this.datapointsWarning = this.datapointsCount === 0 || this.datapointsOutside;
 
@@ -236,8 +247,8 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
             var series = new TimeSeries({
               datapoints: datapoints,
               alias: alias,
-              color: seriesData.delta || false, // TODO: fix, use color as delta temporaly
-              unit: seriesData.unit
+              color: color,
+              unit: seriesData.delta || false // TODO: fix, use unit as delta temporaly
             });
 
             if (datapoints && datapoints.length > 0) {

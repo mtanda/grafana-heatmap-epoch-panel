@@ -55,7 +55,13 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
 
     this.hiddenSeries = {};
     this.seriesList = [];
-    this.colors = $scope.$root.colors;
+    this.colors = [ // TODO: fix hardcoding color
+      '#1f77b4',
+      '#2ca02c',
+      '#d62728',
+      '#8c564b',
+      '#7f7f7f'
+    ];
     this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
     this.events.on('render', this.onRender.bind(this));
@@ -82,6 +88,10 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
   setUnitFormat(axis, subItem) {
     axis.format = subItem.value;
     this.render();
+  }
+
+  getEpochLabel(label) {
+    return label.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, ' ');
   }
 
   issueQueries(datasource) {
@@ -114,6 +124,11 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.datapointsWarning = false;
     this.datapointsCount = 0;
     this.datapointsOutside = false;
+    var maxTimeSeries = 5;
+    if (dataList.length > maxTimeSeries) {
+      console.log('heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)');
+      dataList = dataList.slice(0, maxTimeSeries); // TODO: support only 5 time series
+    }
     this.seriesList = dataList.map(this.seriesHandler.bind(this));
     this.datapointsWarning = this.datapointsCount === 0 || this.datapointsOutside;
 
@@ -130,8 +145,8 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     var series = new TimeSeries({
       datapoints: datapoints,
       alias: alias,
-      color: seriesData.delta || false, // TODO: fix, use color as delta temporaly
-      unit: seriesData.unit,
+      color: color,
+      unit: seriesData.delta || false // TODO: fix, use unit as delta temporaly
     });
 
     if (datapoints && datapoints.length > 0) {

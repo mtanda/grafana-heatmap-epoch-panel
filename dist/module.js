@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['lodash', 'app/plugins/sdk', './heatmap_ctrl', './heatmap'], function (_export, _context) {
+System.register(['lodash', 'app/plugins/sdk', './heatmap_ctrl', './heatmap', './legend'], function (_export, _context) {
   var _, loadPluginCss, HeatmapEpochCtrl;
 
   return {
@@ -10,7 +10,7 @@ System.register(['lodash', 'app/plugins/sdk', './heatmap_ctrl', './heatmap'], fu
       loadPluginCss = _appPluginsSdk.loadPluginCss;
     }, function (_heatmap_ctrl) {
       HeatmapEpochCtrl = _heatmap_ctrl.HeatmapEpochCtrl;
-    }, function (_heatmap) {}],
+    }, function (_heatmap) {}, function (_legend) {}],
     execute: function () {
 
       loadPluginCss({
