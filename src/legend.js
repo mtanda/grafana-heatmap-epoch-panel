@@ -27,34 +27,6 @@ angular.module('grafana.directives').directive('heatmapEpochLegend', function(po
         return el.parents('[data-series-index]').data('series-index');
       }
 
-      function openColorSelector(e) {
-        // if we clicked inside poup container ignore click
-        if ($(e.target).parents('.popover').length) {
-          return;
-        }
-
-        var el = $(e.currentTarget).find('.fa-minus');
-        var index = getSeriesIndexForElement(el);
-        var series = seriesList[index];
-
-        $timeout(function() {
-          popoverSrv.show({
-            element: el[0],
-            position: 'bottom center',
-            template: '<gf-color-picker></gf-color-picker>',
-            model: {
-              series: series,
-              toggleAxis: function() {
-                ctrl.toggleAxis(series);
-              },
-              colorSelected: function(color) {
-                ctrl.changeSeriesColor(series, color);
-              }
-            },
-          });
-        });
-      }
-
       function toggleSeries(e) {
         var el = $(e.currentTarget);
         var index = getSeriesIndexForElement(el);
@@ -102,7 +74,6 @@ angular.module('grafana.directives').directive('heatmapEpochLegend', function(po
 
         if (firstRender) {
           elem.append($container);
-          $container.on('click', '.graph-legend-icon', openColorSelector);
           $container.on('click', '.graph-legend-alias', toggleSeries);
           $container.on('click', 'th', sortLegend);
           firstRender = false;
