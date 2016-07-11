@@ -66,7 +66,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       }
 
       function shouldAbortRender() {
-        if (!data) {
+        if (!data || _.isEmpty(data)) {
           return true;
         }
 
