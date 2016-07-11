@@ -56,11 +56,11 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.hiddenSeries = {};
     this.seriesList = [];
     this.colors = [ // TODO: fix hardcoding color
-      '#1f77b4',
-      '#2ca02c',
-      '#d62728',
-      '#8c564b',
-      '#7f7f7f'
+      '#7EB26D',
+      '#EAB839',
+      '#6ED0E0',
+      '#EF843C',
+      '#E24D42'
     ];
     this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 

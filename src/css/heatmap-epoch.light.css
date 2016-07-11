@@ -1,1 +1,7 @@
 .epoch.heatmap-epoch-colors text { fill: #555555 }
+
+.epoch .category1 .bucket, .epoch.heatmap5 .category1 .bucket { fill: #7EB26D; }
+.epoch .category2 .bucket, .epoch.heatmap5 .category2 .bucket { fill: #EAB839; }
+.epoch .category3 .bucket, .epoch.heatmap5 .category3 .bucket { fill: #6ED0E0; }
+.epoch .category4 .bucket, .epoch.heatmap5 .category4 .bucket { fill: #EF843C; }
+.epoch .category5 .bucket, .epoch.heatmap5 .category5 .bucket { fill: #E24D42; }
