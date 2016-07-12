@@ -126,7 +126,8 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.datapointsOutside = false;
     var maxTimeSeries = 5;
     if (dataList.length > maxTimeSeries) {
-      console.log('heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)');
+      var msg = 'heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)';
+      this.$rootScope.appEvent('alert-warning', [msg, '']);
       dataList = dataList.slice(0, maxTimeSeries); // TODO: support only 5 time series
     }
     this.seriesList = dataList.map(this.seriesHandler.bind(this));
