@@ -112,26 +112,31 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         return epoch;
       }
 
-      function getHeatmapData(datapoints) {
+      function getHeatmapData(datapoints, delta) {
         var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
-        var data = _.chain(datapoints)
+        var groupedData = _.chain(datapoints)
         .reject(function(dp) {
           return dp[0] === null;
         })
         .groupBy(function(dp) {
           return Math.floor((dp[1] - ctrl.range.from) / windowInterval) + 1;
-        })
-        .map(function(values, timeKey) {
-          return {
-            time: Math.floor((timeKey * windowInterval + ctrl.range.from) / 1000),
+        }).value();
+
+        var data = [];
+        var n;
+        var keys = _.keys(groupedData);
+        var min = delta ? _.min(keys) : 1;
+        var max = delta ? _.max(keys) : panel.heatmapOptions.windowSize + 1;
+        for (n = min; n <= max; n++) {
+          var values = groupedData[n] || [];
+
+          data.push({
+            time: Math.floor((n * windowInterval + ctrl.range.from) / 1000),
             histogram: _.countBy(values, function(value) {
               return value[0];
             })
-          };
-        })
-        .sortBy(function(dp) {
-          return dp.time;
-        }).value();
+          });
+        }
 
         if (data.length > panel.heatmapOptions.windowSize) {
           data[panel.heatmapOptions.windowSize].histogram = {};
@@ -212,7 +217,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             return {
               alias: series.label,
               label: epochLabel,
-              values: getHeatmapData(series.datapoints)
+              values: getHeatmapData(series.datapoints, false)
             };
           });
 
@@ -242,7 +247,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               return;
             }
 
-            var values = getHeatmapData(series.datapoints);
+            var values = getHeatmapData(series.datapoints, true);
             indexedData[labelToModelIndexMap[series.label]] = values;
 
             if (dataLength < values.length) {
