@@ -67,7 +67,6 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               try {
                 var height = ctrl.height - getLegendHeight(ctrl.height);
                 elem.css('height', height + 'px');
-                currentSize.height = height;
 
                 return true;
               } catch (e) {
@@ -78,7 +77,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
             }
 
             function shouldAbortRender() {
-              if (!data) {
+              if (!data || _.isEmpty(data)) {
                 return true;
               }
 
@@ -130,22 +129,43 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               return epoch;
             }
 
-            function getHeatmapData(datapoints) {
+            function resize(width, height) {
+              if (width !== currentSize.width) {
+                epoch.option('width', width);
+                var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
+                epoch.option('ticks.time', ticksTime);
+                epoch.ticksChanged();
+              }
+              if (height !== currentSize.height) {
+                epoch.option('height', height);
+              }
+              currentSize.width = width;
+              currentSize.height = height;
+            }
+
+            function getHeatmapData(datapoints, delta) {
               var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
-              var data = _.chain(datapoints).reject(function (dp) {
+              var groupedData = _.chain(datapoints).reject(function (dp) {
                 return dp[0] === null;
               }).groupBy(function (dp) {
                 return Math.floor((dp[1] - ctrl.range.from) / windowInterval) + 1;
-              }).map(function (values, timeKey) {
-                return {
-                  time: Math.floor((timeKey * windowInterval + ctrl.range.from) / 1000),
+              }).value();
+
+              var data = [];
+              var n;
+              var keys = _.keys(groupedData);
+              var min = delta ? _.min(keys) : 1;
+              var max = delta ? _.max(keys) : panel.heatmapOptions.windowSize + 1;
+              for (n = min; n <= max; n++) {
+                var values = groupedData[n] || [];
+
+                data.push({
+                  time: Math.floor((n * windowInterval + ctrl.range.from) / 1000),
                   histogram: _.countBy(values, function (value) {
                     return value[0];
                   })
-                };
-              }).sortBy(function (dp) {
-                return dp.time;
-              }).value();
+                });
+              }
 
               if (data.length > panel.heatmapOptions.windowSize) {
                 data[panel.heatmapOptions.windowSize].histogram = {};
@@ -205,17 +225,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
               // check panel size change
               var width = elem.parent().width();
               var height = elem.parent().height();
-              if (width !== currentSize.width) {
-                epoch.option('width', width);
-                var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
-                epoch.option('ticks.time', ticksTime);
-                epoch.ticksChanged();
-              }
-              if (height !== currentSize.height) {
-                epoch.option('height', height - getLegendHeight(height));
-              }
-              currentSize.width = width;
-              currentSize.height = height;
+              resize(width, height);
 
               if (firstDraw) {
                 delta = true;
@@ -226,17 +236,22 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                   return {
                     alias: series.label,
                     label: epochLabel,
-                    values: getHeatmapData(series.datapoints)
+                    values: getHeatmapData(series.datapoints, false)
                   };
                 });
 
                 if (shouldDelayDraw(panel)) {
-                  // temp fix for legends on the side, need to render twice to get dimensions right
-                  callPlot(false, seriesData);
                   setTimeout(function () {
+                    // fix right legend
+                    if (panel.legend.rightSide && panel.legend.rightSide !== legendSideLastValue) {
+                      width -= ctrl.legendWidth;
+                    }
+                    resize(width, height);
+
                     callPlot(true, seriesData);
+
+                    legendSideLastValue = panel.legend.rightSide;
                   }, 50);
-                  legendSideLastValue = panel.legend.rightSide;
                 } else {
                   callPlot(true, seriesData);
                 }
@@ -259,7 +274,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                     return;
                   }
 
-                  var values = getHeatmapData(series.datapoints);
+                  var values = getHeatmapData(series.datapoints, true);
                   indexedData[labelToModelIndexMap[series.label]] = values;
 
                   if (dataLength < values.length) {

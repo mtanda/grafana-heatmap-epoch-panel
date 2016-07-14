@@ -189,6 +189,8 @@ System.register(['angular', 'lodash', 'jquery'], function (_export, _context) {
               } else {
                 $container.css("max-height", "");
               }
+
+              ctrl.legendWidth = $container.width();
             }
           }
         };

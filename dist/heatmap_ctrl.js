@@ -151,7 +151,7 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
           _this.hiddenSeries = {};
           _this.seriesList = [];
           _this.colors = [// TODO: fix hardcoding color
-          '#1f77b4', '#2ca02c', '#d62728', '#8c564b', '#7f7f7f'];
+          '#7EB26D', '#EAB839', '#6ED0E0', '#EF843C', '#E24D42'];
           _this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
           _this.events.on('render', _this.onRender.bind(_this));
@@ -227,7 +227,8 @@ System.register(['./template', 'angular', 'moment', 'app/core/utils/kbn', 'lodas
             this.datapointsOutside = false;
             var maxTimeSeries = 5;
             if (dataList.length > maxTimeSeries) {
-              console.log('heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)');
+              var msg = 'heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)';
+              this.$rootScope.appEvent('alert-warning', [msg, '']);
               dataList = dataList.slice(0, maxTimeSeries); // TODO: support only 5 time series
             }
             this.seriesList = dataList.map(this.seriesHandler.bind(this));
