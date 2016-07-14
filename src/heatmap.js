@@ -239,13 +239,16 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
 
           if (shouldDelayDraw(panel)) {
-            // fix right legend
-            if (panel.legend.rightSide) {
-              width -= ctrl.legendWidth;
-            }
-            resize(width, height);
+            setTimeout(function() {
+              // fix right legend
+              if (panel.legend.rightSide) {
+                width -= ctrl.legendWidth;
+              }
+              resize(width, height);
 
-            callPlot(true, seriesData);
+              callPlot(true, seriesData);
+            }, 50);
+
             legendSideLastValue = panel.legend.rightSide;
           } else {
             callPlot(true, seriesData);
