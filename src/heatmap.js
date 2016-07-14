@@ -229,6 +229,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               // fix right legend
               if (panel.legend.rightSide && panel.legend.rightSide !== legendSideLastValue) {
                 width -= ctrl.legendWidth;
+                height = ctrl.height;
               }
               resize(width, height);
 
