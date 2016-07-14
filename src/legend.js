@@ -163,6 +163,9 @@ angular.module('grafana.directives').directive('heatmapEpochLegend', function(po
           $container.css("max-height", "");
         }
 
+        if (ctrl.legendWidth) {
+          ctrl.previousLegendWidth = ctrl.legendWidth;
+        }
         ctrl.legendWidth = $container.width();
       }
     }
