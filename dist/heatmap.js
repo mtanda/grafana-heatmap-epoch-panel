@@ -186,7 +186,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                 });
 
                 if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
-                  var ticks = Math.ceil(panel.heatmapOptions.windowSize / panel.heatmapOptions.ticks.time);
+                  var ticks = Math.ceil(panel.heatmapOptions.windowSize / epoch.option('ticks.time'));
                   var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
                   var max = _.isUndefined(ctrl.range.to) ? null : ctrl.range.to.valueOf();
                   epoch.option('tickFormats.bottom', function (d) {
@@ -245,6 +245,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                     // fix right legend
                     if (panel.legend.rightSide && panel.legend.rightSide !== legendSideLastValue) {
                       width -= ctrl.legendWidth;
+                      height = ctrl.height;
                     }
                     resize(width, height);
 
