@@ -111,6 +111,20 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         return epoch;
       }
 
+      function resize(width, height) {
+        if (width !== currentSize.width) {
+          epoch.option('width', width);
+          var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
+          epoch.option('ticks.time', ticksTime);
+          epoch.ticksChanged();
+        }
+        if (height !== currentSize.height) {
+          epoch.option('height', height);
+        }
+        currentSize.width = width;
+        currentSize.height = height;
+      }
+
       function getHeatmapData(datapoints, delta) {
         var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
         var groupedData = _.chain(datapoints)
@@ -209,17 +223,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         // check panel size change
         var width = elem.parent().width();
         var height = elem.parent().height();
-        if (width !== currentSize.width) {
-          epoch.option('width', width);
-          var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
-          epoch.option('ticks.time', ticksTime);
-          epoch.ticksChanged();
-        }
-        if (height !== currentSize.height) {
-          epoch.option('height', height);
-        }
-        currentSize.width = width;
-        currentSize.height = height;
+        resize(width, height);
 
         if (firstDraw) {
           delta = true;
@@ -235,9 +239,13 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
 
           if (shouldDelayDraw(panel)) {
-            // temp fix for legends on the side, need to render twice to get dimensions right
-            callPlot(false, seriesData);
-            setTimeout(function() { callPlot(true, seriesData); }, 50);
+            // fix right legend
+            if (panel.legend.rightSide) {
+              width -= ctrl.legendWidth;
+            }
+            resize(width, height);
+
+            callPlot(true, seriesData);
             legendSideLastValue = panel.legend.rightSide;
           } else {
             callPlot(true, seriesData);
