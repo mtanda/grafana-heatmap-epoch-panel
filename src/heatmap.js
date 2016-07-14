@@ -170,7 +170,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
 
           if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
-            var ticks = Math.ceil(panel.heatmapOptions.windowSize / panel.heatmapOptions.ticks.time);
+            var ticks = Math.ceil(panel.heatmapOptions.windowSize / epoch.option('ticks.time'));
             var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
             var max = _.isUndefined(ctrl.range.to) ? null : ctrl.range.to.valueOf();
             epoch.option('tickFormats.bottom', function (d) {
