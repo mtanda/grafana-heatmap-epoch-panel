@@ -56,7 +56,6 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         try {
           var height = ctrl.height - getLegendHeight(ctrl.height);
           elem.css('height', height + 'px');
-          currentSize.height = height;
 
           return true;
         } catch(e) { // IE throws errors sometimes
@@ -203,7 +202,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           epoch.ticksChanged();
         }
         if (height !== currentSize.height) {
-          epoch.option('height', height - getLegendHeight(height));
+          epoch.option('height', height);
         }
         currentSize.width = width;
         currentSize.height = height;
