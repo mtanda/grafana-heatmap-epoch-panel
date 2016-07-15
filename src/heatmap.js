@@ -88,20 +88,40 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           return epoch;
         }
 
-        epoch = elem.epoch(panel.heatmapOptions);
+        var defaultWindowSize = 60;
+        var defaultBuckets = 10;
+
+        var options = angular.copy(panel.heatmapOptions);
+        if (!_.isNumber(options.windowSize)) {
+          options.windowSize = defaultWindowSize;
+        }
+        if (!_.isNumber(options.buckets)) {
+          options.buckets = defaultBuckets;
+        }
+        epoch = elem.epoch(options);
         scope.$watch('ctrl.panel.heatmapOptions.windowSize', function(newVal, oldVal) {
+          if (!_.isNumber(newVal)) {
+            newVal = defaultWindowSize;
+          }
           epoch.option('windowSize', newVal);
           epoch.option('historySize', newVal * 3);
           epoch.redraw();
         });
         scope.$watch('ctrl.panel.heatmapOptions.buckets', function(newVal, oldVal) {
+          if (!_.isNumber(newVal)) {
+            newVal = defaultBuckets;
+          }
           epoch.option('buckets', newVal);
         });
         scope.$watch('ctrl.panel.heatmapOptions.bucketRange[0]', function(newVal, oldVal) {
-          epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+          if (_.isNumber(newVal)) {
+            epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+          }
         });
         scope.$watch('ctrl.panel.heatmapOptions.bucketRange[1]', function(newVal, oldVal) {
-          epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+          if (_.isNumber(newVal)) {
+            epoch.option('bucketRange', panel.heatmapOptions.bucketRange);
+          }
         });
         scope.$watch('ctrl.panel.heatmapOptions.startTime', function(newVal, oldVal) {
           epoch.option('startTime', newVal);
@@ -114,7 +134,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       function resize(width, height) {
         if (width !== currentSize.width) {
           epoch.option('width', width);
-          var ticksTime = Math.floor(panel.heatmapOptions.windowSize * 30 * 2 / width);
+          var ticksTime = Math.floor(epoch.option('windowSize') * 30 * 2 / width);
           epoch.option('ticks.time', ticksTime);
           epoch.ticksChanged();
         }
@@ -126,7 +146,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       }
 
       function getHeatmapData(datapoints, delta) {
-        var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / panel.heatmapOptions.windowSize);
+        var epoch = getEpoch();
+        var windowInterval = Math.floor((ctrl.range.to - ctrl.range.from) / epoch.option('windowSize'));
         var groupedData = _.chain(datapoints)
         .reject(function(dp) {
           return dp[0] === null;
@@ -139,7 +160,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         var n;
         var keys = _.keys(groupedData);
         var min = delta ? _.min(keys) : 1;
-        var max = delta ? _.max(keys) : panel.heatmapOptions.windowSize + 1;
+        var max = delta ? _.max(keys) : epoch.option('windowSize') + 1;
         for (n = min; n <= max; n++) {
           var values = groupedData[n] || [];
 
@@ -151,8 +172,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
         }
 
-        if (data.length > panel.heatmapOptions.windowSize) {
-          data[panel.heatmapOptions.windowSize].histogram = {};
+        if (data.length > epoch.option('windowSize')) {
+          data[epoch.option('windowSize')].histogram = {};
         }
 
         return data;
@@ -170,7 +191,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
 
           if (ctrl.range.from !== currentTimeRange[0] || ctrl.range.to !== currentTimeRange[1]) {
-            var ticks = Math.ceil(panel.heatmapOptions.windowSize / epoch.option('ticks.time'));
+            var ticks = Math.ceil(epoch.option('windowSize') / epoch.option('ticks.time'));
             var min = _.isUndefined(ctrl.range.from) ? null : ctrl.range.from.valueOf();
             var max = _.isUndefined(ctrl.range.to) ? null : ctrl.range.to.valueOf();
             epoch.option('tickFormats.bottom', function (d) {
