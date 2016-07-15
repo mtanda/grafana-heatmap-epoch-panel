@@ -191,7 +191,11 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
                   var max = _.isUndefined(ctrl.range.to) ? null : ctrl.range.to.valueOf();
                   epoch.option('tickFormats.bottom', function (d) {
                     var timeFormat = time_format(ticks, min, max);
-                    return moment.unix(d).format(timeFormat);
+                    var time = moment.unix(d);
+                    if (dashboard.getTimezone() === 'utc') {
+                      time = time.utc();
+                    }
+                    return time.format(timeFormat);
                   });
                   epoch.ticksChanged();
                 }
