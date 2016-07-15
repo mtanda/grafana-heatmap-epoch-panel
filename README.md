@@ -48,6 +48,9 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
 
 #### Changelog
 
+##### v0.1.5
+- Fixed user preference timezone handling
+
 ##### v0.1.4
 - Fixed sparse data handling
 - Fixed heatmap color, follow Grafana standard color
