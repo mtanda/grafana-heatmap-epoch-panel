@@ -25,6 +25,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
       var currentDatasource = '';
       var currentTimeRange = [0, 0];
       var currentSize = { width: null, height: null };
+      var currentBucketRange = [null, null];
 
       // Receive render events
       ctrl.events.on('render', function(renderData) {
@@ -179,6 +180,35 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         return data;
       }
 
+      function getBucketRangeFromData(seriesData, currentBucketRange) {
+        var min = Number.MAX_VALUE;
+        var max = Number.MIN_VALUE;
+
+        if (_.isNumber(currentBucketRange[0])) {
+          min = currentBucketRange[0];
+        }
+        if (_.isNumber(currentBucketRange[1])) {
+          max = currentBucketRange[1];
+        }
+
+        _.each(seriesData, function(series) {
+          _.each(series.values, function(value) {
+            if (_.isEmpty(value.histogram)) {
+              return;
+            }
+            var keys = _.keys(value.histogram);
+            min = _.min([min, _.min(keys)]);
+            max = _.max([max, _.max(keys)]);
+          });
+        });
+
+        if (!(min === Number.MAX_VALUE || max === Number.MIN_VALUE)) {
+          return [min, max];
+        } else {
+          return [0, 0];
+        }
+      }
+
       function callPlot(incrementRenderCounter, data) {
         try {
           epoch.setData(data);
@@ -249,6 +279,13 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             };
           });
 
+          if (!_.isNumber(panel.heatmapOptions.bucketRange[0])
+            || !_.isNumber(panel.heatmapOptions.bucketRange[1])) {
+            currentBucketRange = [panel.heatmapOptions.bucketRange[0], panel.heatmapOptions.bucketRange[1]];
+            currentBucketRange = getBucketRangeFromData(seriesData, currentBucketRange);
+            epoch.option('bucketRange', currentBucketRange);
+          }
+
           if (shouldDelayDraw(panel)) {
             setTimeout(function() {
               // fix right legend
@@ -290,6 +327,8 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
               dataLength = values.length;
             }
           });
+
+          // TODO: auto bucketRange set for realtime graph
 
           if (!_.isEmpty(indexedData)) {
             var now = new Date() / 1000;
