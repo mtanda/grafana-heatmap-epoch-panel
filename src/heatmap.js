@@ -203,7 +203,7 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
         });
 
         if (!(min === Number.MAX_VALUE || max === Number.MIN_VALUE)) {
-          return [min, max];
+          return [parseInt(min, 10), parseInt(max, 10)];
         } else {
           return [0, 0];
         }
@@ -321,20 +321,27 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
             }
 
             var values = getHeatmapData(series.datapoints, true);
-            indexedData[labelToModelIndexMap[series.label]] = values;
+            indexedData[labelToModelIndexMap[series.label]] = {
+              values: values
+            };
 
             if (dataLength < values.length) {
               dataLength = values.length;
             }
           });
 
-          // TODO: auto bucketRange set for realtime graph
+          var bucketRange = getBucketRangeFromData(indexedData, currentBucketRange);
+          if (bucketRange[0] !== currentBucketRange[0]
+            || bucketRange[1] !== currentBucketRange[1]) {
+            currentBucketRange = bucketRange;
+            epoch.option('bucketRange', currentBucketRange);
+          }
 
           if (!_.isEmpty(indexedData)) {
             var now = new Date() / 1000;
             for (var n = 0; n < dataLength; n++) {
               var pushData = indexedData.map(function (d) {
-                return d[n] || {
+                return d.values[n] || {
                   time: now,
                   histogram: {
                   }
