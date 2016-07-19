@@ -48,6 +48,9 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
 
 #### Changelog
 
+##### v0.1.6
+- Add auto bucket range mode
+
 ##### v0.1.5
 - Fixed user preference timezone handling
 
