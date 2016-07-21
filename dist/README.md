@@ -42,11 +42,12 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
   - Because Epoch library doesn't support some of Flot library feature (Graph panel use Flot)
   - Doesn't support Time range selection by clicking panel, Tooltip, Annotation, Draw threshold lines, etc...
 
-- This plugin only support up to 5 time series.
-
 ------
 
 #### Changelog
+
+##### v0.1.7
+- Increase the supported number of time series
 
 ##### v0.1.6
 - Add auto bucket range mode

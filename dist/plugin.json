@@ -15,8 +15,8 @@
     "screenshots": [
       {"name": "Heatmap", "path": "images/heatmap.png"}
     ],
-    "version": "0.1.6",
-    "updated": "2016-07-19"
+    "version": "0.1.7",
+    "updated": "2016-07-21"
   },
 
   "dependencies": {
