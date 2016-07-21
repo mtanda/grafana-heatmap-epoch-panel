@@ -55,13 +55,7 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
 
     this.hiddenSeries = {};
     this.seriesList = [];
-    this.colors = [ // TODO: fix hardcoding color
-      '#7EB26D',
-      '#EAB839',
-      '#6ED0E0',
-      '#EF843C',
-      '#E24D42'
-    ];
+    this.colors = $scope.$root.colors;
     this.theme = config.bootData.user.lightTheme ? 'epoch-theme-default' : 'epoch-theme-dark';
 
     this.events.on('render', this.onRender.bind(this));
@@ -124,7 +118,7 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
     this.datapointsWarning = false;
     this.datapointsCount = 0;
     this.datapointsOutside = false;
-    var maxTimeSeries = 5;
+    var maxTimeSeries = 56;
     if (dataList.length > maxTimeSeries) {
       var msg = 'heatmap epoch panel warning: exceed max time series (support' + maxTimeSeries + ' time series)';
       this.$rootScope.appEvent('alert-warning', [msg, '']);
