@@ -46,6 +46,9 @@ Please read [official document](http://epochjs.github.io/epoch/real-time/#heatma
 
 #### Changelog
 
+##### v0.1.7
+- Increase the supported number of time series
+
 ##### v0.1.6
 - Add auto bucket range mode
 
