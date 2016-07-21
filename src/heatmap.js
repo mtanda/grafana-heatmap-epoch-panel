@@ -202,10 +202,13 @@ angular.module('grafana.directives').directive('grafanaHeatmapEpoch', function($
           });
         });
 
+        if (min === max) {
+          max = parseInt(min, 10) + 1;
+        }
         if (!(min === Number.MAX_VALUE || max === Number.MIN_VALUE)) {
           return [parseInt(min, 10), parseInt(max, 10)];
         } else {
-          return [0, 0];
+          return [0, 1];
         }
       }
 
