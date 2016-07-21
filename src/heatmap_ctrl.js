@@ -125,6 +125,23 @@ export class HeatmapEpochCtrl extends MetricsPanelCtrl {
       dataList = dataList.slice(0, maxTimeSeries); // TODO: support only 5 time series
     }
     this.seriesList = dataList.map(this.seriesHandler.bind(this));
+    //if (this.panel.stack) {
+          console.log('begin');
+    if (true) {
+      this.seriesList = _.reduce(this.seriesList, function(memo, series) {
+        if (_.isEmpty(memo)) {
+          console.log('empty');
+          console.log(memo);
+          memo = series;
+          memo.alias = memo.label = "aggregate result";
+        } else {
+          console.log('else');
+          console.log(memo);
+          memo.datapoints = _.union(memo.datapoints, series.datapoints);
+        }
+      }, {});
+    }
+          console.log('done');
     this.datapointsWarning = this.datapointsCount === 0 || this.datapointsOutside;
 
     this.loading = false;
