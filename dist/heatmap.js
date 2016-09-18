@@ -153,7 +153,7 @@ System.register(['angular', 'jquery', 'moment', 'lodash', 'app/core/utils/kbn', 
             function resize(width, height) {
               if (width !== currentSize.width) {
                 epoch.option('width', width);
-                var ticksTime = Math.floor(epoch.option('windowSize') * 30 * 2 / width);
+                var ticksTime = Math.max(Math.floor(epoch.option('windowSize') * 30 * 2 / width), 1);
                 epoch.option('ticks.time', ticksTime);
                 epoch.ticksChanged();
               }
